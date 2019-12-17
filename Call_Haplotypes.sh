@@ -1,4 +1,6 @@
 ###THIS MODULE WILL ACTUALLY CALL THE HAPLOTYPES
+#!/bin/bash
+
 cd TMP
 
 working_directory=`cat RUN_DIR`
