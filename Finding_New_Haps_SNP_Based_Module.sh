@@ -57,7 +57,7 @@ do
 
 #### MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
 bwa index $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
-bwa mem ALL_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
+bwa mem -t 10 ALL_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
 samtools view -h -F 4 $SPECIMEN_NAME.alignment.sam | samtools view -bS > $SPECIMEN_NAME.mapped_only.sam  #### take mapped reads only
 samtools view $SPECIMEN_NAME.mapped_only.sam | awk '{print("@"$1"\n"$10"\n+\n"$11)}' > $SPECIMEN_NAME.mapped_only.fastq
 #######################################################################################################################################
@@ -108,6 +108,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -perc_identity 80 \
 -qcov_hsp_perc 100 \
 -max_target_seqs 1000 \
+-num_threads 10 \
 -outfmt "6 qseqid sseq" \
 -out $tmp_directory/$SPECIMEN_NAME.blast_result 
 /usr/local/bin/gsed -i 's/^/>/' $tmp_directory/$SPECIMEN_NAME.blast_result
@@ -213,6 +214,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
+-num_threads 10 \
 -out $tmp_directory/new_potential_otherhaps/$SPECIMEN_NAME.RESULT_$OTHER_HAPS.blast_result \
 -max_target_seqs 1 \
 -outfmt "6 qseqid"
@@ -228,6 +230,7 @@ then  $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -query $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta -word_size 7 -evalue 0.001 \
 -perc_identity 80 \
 -qcov_hsp_perc 100 \
+-num_threads 10 \
 -out $tmp_directory/new_potential_otherhaps/$SPECIMEN_NAME.RESULT_$OTHER_HAPS.blast_result_REDUCED_SIMILARITY \
 -max_target_seqs 1 \
 -outfmt "6 qseqid"
