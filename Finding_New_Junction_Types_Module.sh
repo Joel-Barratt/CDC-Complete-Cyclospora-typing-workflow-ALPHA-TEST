@@ -15,23 +15,12 @@ temp_folder=`cat TMP_FOL` #/Users/joelbarratt/Documents/CYCLOSPORA/HAPLOTYPE_CAL
 
 # Mt Junction sequences discovered prior to 2019 are found in this location.
 # I have left the primer sequences on these references because the purpose of this file is to maximize read recovery -- reads will contain primer sequence
-junction_with_primer=$working_directory/REF_SEQS/READ_RECOVERY/FOR_READ_RECOVERY_Junction_sequences_with_primers_2019.fasta
+junction_with_primer=$working_directory/REF_SEQS/READ_RECOVERY/MODIFIED_FOR_READ_RECOVERY_Junction_sequences_with_primers_2019.fasta
 
 
 
-############################################################################################################## get all known junction sequences for read recovery
-cat $junction_with_primer > $temp_folder/JUNCTION_REFS.fasta # pull only junction sequences from original reference file.
+### used to be here
 
-file_check=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*Junction*.fasta"`
-
-if [ -f $file_check ]; 
-then 
-cat $working_directory/CYCLO_REF_SEQS/BLASTING/NEW_HAPS/*Junction*.fasta >> $temp_folder/JUNCTION_REFS.fasta
-
-#else echo "NO NEW HAPLOTYPES FOUND PREVIOUSLY -- LETS CHECK THE LATEST SPECIMEN"
-fi
-
-#############################################################################################################
 
 
 
@@ -57,6 +46,25 @@ for SPECIMEN_NAME in `cat $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION`
 
 
 #SPECIMEN_NAME=`cat SPECIMENS_TO_SEARCH_JUNCTION`
+
+
+## or does it work best here?
+rm JUNCTION_REFS.fasta
+
+############################################################################################################## get all known junction sequences for read recovery
+cat $junction_with_primer > $temp_folder/JUNCTION_REFS.fasta # pull only junction sequences from original reference file.
+
+file_check=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*Junction*.fasta"`
+
+if [ `cat $file_check |wc -l` -gt 0 ]; 
+then 
+cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*Junction*.fasta >> $temp_folder/JUNCTION_REFS.fasta
+fi
+
+#############################################################################################################
+
+
+
 
 
                bwa index JUNCTION_REFS.fasta
