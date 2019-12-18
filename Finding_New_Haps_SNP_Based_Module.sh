@@ -32,18 +32,7 @@ cd $tmp_directory
 /usr/local/bin/gsed -i 's/.clean_merged.fastq//g' SPECIMENS_TO_SEARCH_OTHER
 
 
-#### FILE CHECK 1 -- ARE THERE ANY NEW HAPLOTYPES THAT YOU MIGHT WANT TO ADD TO THE MAPPING REFERENCES?
-##############################################################################################################
-cat $working_directory/REF_SEQS/READ_RECOVERY/FOR_READ_RECOVERY_long_types_NON_JUNCTION_2019.fasta > $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
 
-file_check_1=`echo "$tmp_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
-
-if [ -f $file_check_1 ]; 
-then 
-cat $tmp_directory/CYCLO_REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
-/usr/local/bin/gsed -i '/Junction/,+1 d' $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
-fi
-#############################################################################################################
 
 
 
@@ -53,11 +42,30 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
 do
 
 
+#### FILE CHECK 1 -- ARE THERE ANY NEW HAPLOTYPES THAT YOU MIGHT WANT TO ADD TO THE MAPPING REFERENCES?
+##############################################################################################################
+rm READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+cat $working_directory/REF_SEQS/READ_RECOVERY/FOR_READ_RECOVERY_long_types_NON_JUNCTION_2019.fasta > $tmp_directory/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+
+file_check_1=`echo "$tmp_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
+
+if [ `cat $file_check_1 |wc -l` -gt 0 ]; 
+then 
+cat $tmp_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_directory/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+/usr/local/bin/gsed -i '/Junction/,+1 d' $tmp_directory/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+fi
+#############################################################################################################
+
+
+
+
+
+
 #SPECIMEN_NAME=`cat SPECIMENS_TO_SEARCH_OTHER`
 
 #### MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
-bwa index $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
-bwa mem -t 10 ALL_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
+bwa index $tmp_directory/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+bwa mem -t 10 READ_RECOVERY_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
 samtools view -h -F 4 $SPECIMEN_NAME.alignment.sam | samtools view -bS > $SPECIMEN_NAME.mapped_only.sam  #### take mapped reads only
 samtools view $SPECIMEN_NAME.mapped_only.sam | awk '{print("@"$1"\n"$10"\n+\n"$11)}' > $SPECIMEN_NAME.mapped_only.fastq
 #######################################################################################################################################
@@ -82,7 +90,7 @@ seqret -sequence $tmp_directory/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq -outseq 
 
 
 ###### THIS NEXT STEP WILL FILTER CLUSTES BY SIZE - REMOVING CLUSTERS THAT DO NOT HAVE MORE THAN 10 SEQUENCES IN THEM --- STEP 6 OUTPUT
-perl $working_directory/make_multi_seq.pl $tmp_directory/$SPECIMEN_NAME.clean_merged_CLUSTERS.fasta $tmp_directory/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq.clstr multi-seq 10  ###ADJUSTED JOEL CHECK THIS
+perl $working_directory/make_multi_seq.pl $tmp_directory/$SPECIMEN_NAME.clean_merged_CLUSTERS.fasta $tmp_directory/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq.clstr multi-seq 30  ###ADJUSTED JOEL CHECK THIS
 
 
 
@@ -94,6 +102,21 @@ cd $tmp_directory
 
 ##########################################################################################################################################################################################################################
 ##MAKE A BLAST DATABASE FROM THE CLUSTERS --- THIS IS WHERE WE TRY TO IDENTIFY SEQUENCES FROM THE CLUSTERED RAW READS THAT MAY REPRESENT NEW TYPES
+##############################################################################################################
+# make a database of known non-junction markers to see if there is a match
+rm ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+cat $complete_reference_database > $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+
+file_check_2=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
+
+if [ `cat $file_check_2 |wc -l` -gt 0 ]; 
+then 
+cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+/usr/local/bin/gsed -i '/Junction/,+1 d' $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+fi
+##############################################################################################################
+
+
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
 -in $tmp_directory/$SPECIMEN_NAME.all_clusters.fasta \
 -input_type fasta \
@@ -102,7 +125,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
 
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -db $SPECIMEN_NAME.all_clusters.fasta \
--query $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta \
+-query $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta \
 -word_size 7 \
 -evalue 0.001 \
 -perc_identity 80 \
@@ -180,28 +203,26 @@ done < $tmp_directory/$SPECIMEN_NAME.REMOVE_BAD_SEQUENCES.fasta
 
 
 
-#### 
-##############################################################################################################
-# make a database of known non-junction markers to see if there is a match
-cat $complete_reference_database > $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
-
-file_check_2=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
-
-if [ -f $file_check_2 ]; 
-then 
-cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
-else echo "THIS DIRECTORY IS EMPTY"
-fi
-
-#############################################################################################################
-
-
-
-
 for OTHER_HAPS in `ls -1`
 do
 
 
+##############################################################################################################
+# make a database of known non-junction markers to see if there is a match
+rm ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+cat $complete_reference_database > $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+
+file_check_3=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
+
+if [ `cat $file_check_3 |wc -l` -gt 0 ]; 
+then 
+cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+/usr/local/bin/gsed -i '/Junction/,+1 d' $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
+fi
+
+
+
+#############################################################################################################
 
 # NOW IF THAT SEQUENCE IS BLASTED AND IT IS NOT 100 PERCENT IDENTICAL WITH AND NOT 100% COVERAGE WITH ANYTHING IN THE DATABASE, THEN WE KEEP IT.
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb -in $tmp_directory/new_potential_otherhaps/$OTHER_HAPS -input_type fasta -dbtype nucl
@@ -209,7 +230,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb -in $tmp_directory/ne
 
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -db $OTHER_HAPS \
--query $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta \
+-query $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta \
 -word_size 7 \
 -evalue 0.001 \
 -perc_identity 100 \
@@ -227,7 +248,7 @@ if [ $match_present == 0 ];
 
 then  $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -db $OTHER_HAPS \
--query $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta -word_size 7 -evalue 0.001 \
+-query $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta -word_size 7 -evalue 0.001 \
 -perc_identity 80 \
 -qcov_hsp_perc 100 \
 -num_threads 10 \
@@ -236,10 +257,10 @@ then  $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -outfmt "6 qseqid"
 
 which_marker=`/usr/local/bin/gsed 's/_Hap_.*/_Hap_/' $SPECIMEN_NAME.RESULT_$OTHER_HAPS.blast_result_REDUCED_SIMILARITY | head -1`
-hap_count=`cat $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta | grep $which_marker | wc -l`
+hap_count=`cat $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta | grep $which_marker | wc -l`
 hap_count_plus_one=`echo "$hap_count + 1" | bc`
 cat $OTHER_HAPS | awk '/^>/{print ">'$which_marker$hap_count_plus_one'"; next}{print}' > $working_directory/REF_SEQS/BLASTING/NEW_HAPS/$SPECIMEN_NAME.$which_marker$hap_count_plus_one.fasta
-cat $OTHER_HAPS | awk '/^>/{print ">'$which_marker$hap_count_plus_one'"; next}{print}' >> $tmp_directory/ALL_REFERENCE_SEQUENCES.fasta
+#cat $OTHER_HAPS | awk '/^>/{print ">'$which_marker$hap_count_plus_one'"; next}{print}' >> $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
 
 
 elif [ $match_present -gt 0 ];

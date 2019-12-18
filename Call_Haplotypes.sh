@@ -19,21 +19,7 @@ cd $tmp_folder
 
 
 
-## COMPILE REFERENCE DATABASES
 
-cat $complete_reference_database > $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
-cat $non_junction_markers >> $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
-
-cat $complete_reference_database > $tmp_folder/ALL_REFERENCES_FOR_BLASTING.fasta
-
-file_check=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
-
-
-if [ -f $file_check ]; 
-then 
-cat $working_directory/CYCLO_REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
-cat $working_directory/CYCLO_REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_folder/ALL_REFERENCES_FOR_BLASTING.fasta
-fi
 
 
 
@@ -42,6 +28,25 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_TYPE`
 do
 
 #SPECIMEN_NAME=`cat SPECIMENS_TO_TYPE`
+
+rm ALL_REFERENCES_FOR_BLASTING.fasta READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+
+## COMPILE REFERENCE DATABASES
+
+cat $complete_reference_database > $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+cat $non_junction_markers >> $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+cat $complete_reference_database > $tmp_folder/ALL_REFERENCES_FOR_BLASTING.fasta
+
+file_check=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
+
+
+if [ `cat $file_check |wc -l` -gt 0 ]; 
+then 
+cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
+cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_folder/ALL_REFERENCES_FOR_BLASTING.fasta
+fi
+
+
 
 
 #### MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
@@ -76,7 +81,7 @@ seqret -sequence $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq -outseq $tm
 
 ###### THIS NEXT STEP WILL FILTER CLUSTES BY SIZE - REMOVING CLUSTERS THAT DO NOT HAVE MORE THAN 10 SEQUENCES IN THEM --- STEP 6 OUTPUT
 
-perl $working_directory/make_multi_seq.pl $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fasta $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq.clstr multi-seq 30  ###ADJUSTED JOEL CHECK THIS -- multi-seq determines how many reads is in a cluster before its written.
+perl $working_directory/make_multi_seq.pl $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fasta $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq.clstr multi-seq 10  ###ADJUSTED JOEL CHECK THIS -- multi-seq determines how many reads is in a cluster before its written.
 cd multi-seq
 cat * >> $tmp_folder/$SPECIMEN_NAME.all_clusters.fasta
 cd ..

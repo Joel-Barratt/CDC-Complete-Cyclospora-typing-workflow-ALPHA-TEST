@@ -27,11 +27,11 @@ HAPLOTYPE_CALLER=/HAPLOTYPE_CALLER  # do not modify this line                   
                                              #
 
 #### IF YOU FIND A NEW HAPLOTYPE, WHAT IS THE DEPTH REQUIRED FOR IT TO BE CONSIDERED REAL?
-REQUIRED_DEPTH_NEW_HAP=500
+REQUIRED_DEPTH_NEW_HAP=150
 
 
 #### WHAT IS THE DEPTH REQUIRED FOR DETECTION OF A KNOWN HAPLOTYPE IN A SPECIMEN?
-CALL_DEPTH=50
+#CALL_DEPTH=50
 
 
 
@@ -60,7 +60,7 @@ input_reads=$working_directory$HAPLOTYPE_CALLER/INPUT_READS
 # WHAT IS THE LOCATION OF YOUR REFERENCE SEQUENCES (YOUR KNOWN CYCLOSPORA HAPLOTYPES)?
 # The location below should be fine for the automatic Cyclospora workflow - you probably shouldn't modify this.
                             
-complete_reference_database=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/BLASTING/ORIGINAL_REFS/2019_ORIGINAL_REFERENCES_SHORTENED.fasta
+complete_reference_database=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/BLASTING/ORIGINAL_REFS/MODIFIED_2019_ORIGINAL_REFERENCES_SHORTENED.fasta
 
 
 ######################################################################################################################################################################## DO NOT MODIFY SCRIPT BELOW THIS POINT.
@@ -160,9 +160,10 @@ bash $LOC/BBMAP/bbmap/bbmerge-auto.sh in1=$LOC/TMP/$SPECIMEN_NAME.clean1.fq in2=
 
 
 cd $LOC/TMP/
+bash ../Finding_New_Junction_Types_Module.sh
 
 bash ../Finding_New_Haps_SNP_Based_Module.sh
-bash ../Finding_New_Junction_Types_Module.sh
+
 bash ../Call_Haplotypes.sh
 
 
