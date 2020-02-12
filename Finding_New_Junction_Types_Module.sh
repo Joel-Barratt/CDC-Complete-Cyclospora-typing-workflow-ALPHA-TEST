@@ -10,18 +10,13 @@
 working_directory=`cat RUN_DIR` # /Users/joelbarratt/Documents/CYCLOSPORA/HAPLOTYPE_CALLER
 complete_reference_database=`cat ALL_REF` # /Users/joelbarratt/Documents/CYCLOSPORA/HAPLOTYPE_CALLER/REF_SEQS/BLASTING/ORIGINAL_REFS/2019_ORIGINAL_REFERENCES_SHORTENED.fasta
 temp_folder=`cat TMP_FOL` #/Users/joelbarratt/Documents/CYCLOSPORA/HAPLOTYPE_CALLER/TMP
-
-
-
-# Mt Junction sequences discovered prior to 2019 are found in this location.
-# I have left the primer sequences on these references because the purpose of this file is to maximize read recovery -- reads will contain primer sequence
-junction_with_primer=$working_directory/REF_SEQS/READ_RECOVERY/MODIFIED_FOR_READ_RECOVERY_Junction_sequences_with_primers_2019.fasta
+junction_with_primer=`cat READ_REC_JUNCTION`
 
 
 
 ### used to be here
 
-
+mkdir CONFIRMED_JUNCTIONS
 
 
 
@@ -45,7 +40,7 @@ for SPECIMEN_NAME in `cat $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION`
        do
 
 
-#SPECIMEN_NAME=`cat SPECIMENS_TO_SEARCH_JUNCTION`
+#SPECIMEN_NAME=`cat SPECIMENS_TO_SEARCH_JUNCTION | head -1`
 
 
 ## or does it work best here?
@@ -140,7 +135,7 @@ done
 cp $SPECIMEN_NAME.assemble_these_seqs ../assemble_these
 cd ../assemble_these
 
-$working_directory/CAP3/cap3.macosx.intel64/cap3 $SPECIMEN_NAME.assemble_these_seqs -o 90 -p 95
+$working_directory/CAP3/cap3.macosx.intel64/cap3 $SPECIMEN_NAME.assemble_these_seqs -o 90 -p 98
 
 
 length1=`cat *.contigs | wc -l`
@@ -188,6 +183,11 @@ rm -rf novel_junction_finder_assembly novel_junction_finder_out* *map_to_this.fa
 /Users/joelbarratt/Library/Python/3.7/bin/cutadapt $SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq -a GCTGTAGATGGATGCTTTGGTA --output $SPECIMEN_NAME.REV_three_prime_trim.fasta  --fasta ### five prime adapter only   ----- IF CONTIG IS REVERSED
 
 cat $SPECIMEN_NAME.REV_three_prime_trim.fasta >> $SPECIMEN_NAME.novel_junction_sequence_found.fasta
+
+
+
+cat $SPECIMEN_NAME.REV_three_prime_trim.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.validated_junction_sequences.fasta ###### save these sequences and add them to the clusters at the end of the hap caller script just before blasting.
+
 ####NOTE THAT CHINA IS NOT CONSIDERED IN THE CUTADAPT STEP YET. CONSIDER ITS ADDITION. BY CUTTING THE PRIMERS IN HALF TO THE POINT WHERE THE CHINESE PRIMER ENDS.
 
 
@@ -250,6 +250,8 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn -db ../JUNCTION_REFS.fasta
 -num_threads 10 \
 -out $temp_folder/new_potential_junctions/$SPECIMEN_NAME.RESULT_$FOOBAR.blast_result \
 -max_target_seqs 1 \
+-dust no \
+-soft_masking false \
 -outfmt "6 qseqid pident mismatch gapopen gaps sseqid sseq evalue bitscore"
 
 match_present=`cat $temp_folder/new_potential_junctions/$SPECIMEN_NAME.RESULT_$FOOBAR.blast_result | wc -l`
