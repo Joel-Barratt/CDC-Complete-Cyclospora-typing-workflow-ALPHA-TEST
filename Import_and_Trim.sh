@@ -214,5 +214,7 @@ bash ../Finding_New_Junction_Types_Module.sh
 
 bash ../Call_Haplotypes.sh
 
+cd $LOC/
 
+Rscript START_haplotype_sheet_generator.R
 
