@@ -34,6 +34,16 @@ technology = solexa
 
 
 ##number of threads is not.
+## mrl is minimum read length
+##[percent_required(pr)=integer ≥ 1] Default is dependent of the sequencing technology used and assembly quality wished. Controls the relative ##percentage of exact word matches in an approximate overlap that has to be reached to accept this overlap as possible match. Increasing this ##number will decrease the number of possible alignments that have to be checked by Smith-Waterman later on in the assembly, but it also might ##lead to the rejection of weaker overlaps (i.e. overlaps that contain a higher number of mismatches).
+# -AL is alignment
+# -AS is assembly
+# -CO is contigs settings
 parameters = -GE:not=12 \
 	      -NW:cmrnl=warn \
-              SOLEXA_SETTINGS -AL:mrs=90 -AS:mrl=50 -SK:pr=99
+              SOLEXA_SETTINGS -AL:mrs=100 \
+                              -CO:mnq=15 \
+                              -CO:mrpg=10 \
+                              -AS:mrl=50 \
+                              -AS:mrpc=20 \
+                              -SK:pr=100
