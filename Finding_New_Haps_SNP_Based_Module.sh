@@ -15,6 +15,8 @@ complete_reference_database=`cat ALL_REF`
 tmp_directory=`cat TMP_FOL`
 REQUIRED_DEPTH_NEW_HAP=`cat DEPTH_NEW`
 bed_references=`cat BED_LOCATION`
+number_of_threads=`cat CORES_TO_USE`
+
 #####################################################################################################################################################################
 
 
@@ -68,7 +70,7 @@ fi
 
 #### MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
 bwa index $tmp_directory/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
-bwa mem -t 10 READ_RECOVERY_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
+bwa mem -t $number_of_threads READ_RECOVERY_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
 samtools view -h -F 4 $SPECIMEN_NAME.alignment.sam | samtools view -bS > $SPECIMEN_NAME.mapped_only.sam  #### take mapped reads only
 samtools view $SPECIMEN_NAME.mapped_only.sam | awk '{print("@"$1"\n"$10"\n+\n"$11)}' | awk '{if(NR%4==1) $0=sprintf("@Read_%d",(1+i++)); print;}' > $SPECIMEN_NAME.mapped_only.fastq  # the last awk bit renames the reads 
 #######################################################################################################################################
@@ -107,7 +109,7 @@ cd $SPECIMEN_NAME.MAPPING
 
 $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $tmp_directory/FULL_LENGTH_MARKERS.fasta $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.BT_INDEX
 $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.BT_INDEX \
--U $tmp_directory/$SPECIMEN_NAME.mapped_only.fastq --threads 10 --local > $SPECIMEN_NAME.alignment.bam
+-U $tmp_directory/$SPECIMEN_NAME.mapped_only.fastq --threads $number_of_threads --local > $SPECIMEN_NAME.alignment.bam
 
 
 
@@ -200,7 +202,7 @@ for find_depth_and_alignments in `cat $tmp_directory/LIST_OF_LOCI_UNIQUE`
 
 
 $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.fastq \
--o $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq -p 1 -c 1 -g 1 -d 0 -T 10 -s 1
+-o $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq -p 1 -c 1 -g 1 -d 0 -T $number_of_threads -s 1
 
 
 ####THIS IS AN EMBOSS TOOL THAT WILL CONVERT FASTQ TO FASTA - you need to do this in order to turn the clusters into fasta files
@@ -256,7 +258,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
--num_threads 10 \
+-num_threads $number_of_threads \
 -out $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.multi-seq/$SPECIMEN_NAME.$find_depth_and_alignments.RESULT_$OTHER_HAPS.blast_result \
 -max_target_seqs 1 \
 -dust no \
@@ -280,7 +282,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
--num_threads 10 \
+-num_threads $number_of_threads \
 -out $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.multi-seq/$SPECIMEN_NAME.$find_depth_and_alignments.RESULT_$OTHER_HAPS.blast_result_COVERAGE_GUESS \
 -dust no \
 -soft_masking false \
@@ -300,7 +302,7 @@ then  $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -query $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta -word_size 7 -evalue 0.001 \
 -perc_identity 75 \
 -qcov_hsp_perc 85 \
--num_threads 10 \
+-num_threads $number_of_threads \
 -out $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.multi-seq/$SPECIMEN_NAME.RESULT_$OTHER_HAPS.blast_result_REDUCED_SIMILARITY \
 -dust no \
 -soft_masking false \

@@ -1,13 +1,10 @@
 ###THIS MODULE WILL ACTUALLY CALL THE HAPLOTYPES
 #!/bin/bash
 
-#cd TMP #see what happens if you unhash this. I just hashed it.
-
 working_directory=`cat RUN_DIR`
 tmp_folder=`cat TMP_FOL`
 complete_reference_database=`cat ALL_REF`
-#non_junction_markers=$working_directory/REF_SEQS/READ_RECOVERY/FOR_READ_RECOVERY_long_types_NON_JUNCTION_2019.fasta # THIS MAY NOT BE RELEVANT FOR OTHER PARASITES.
-
+number_of_threads=`cat CORES_TO_USE`
 minimum_depth_for_haplotype_assignment=`cat DEPTH_FOR_CALLING`
 
 
@@ -18,7 +15,7 @@ do
 echo "$file" >> $tmp_folder/SPECIMENS_TO_TYPE
 done
 cd $tmp_folder
-/usr/local/bin/gsed -i 's/.FINAL_CLIPPED_FOR_HAP_CALLING.fastq//g' SPECIMENS_TO_TYPE
+/usr/local/bin/gsed -i 's/.FINAL_CLIPPED_FOR_HAP_CALLING.fastq//g' $tmp_folder/SPECIMENS_TO_TYPE
 
 
 ## COMPILE REFERENCE DATABASES
@@ -47,13 +44,6 @@ do
 #SPECIMEN_NAME=`cat SPECIMENS_TO_TYPE | head -1`
 
 
-#### MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
-#bwa index $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
-#bwa mem -t 10 $tmp_folder/READ_RECOVERY_REFERENCE_SEQUENCES.fasta $tmp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
-#samtools view -h -F 4 $SPECIMEN_NAME.alignment.sam | samtools view -bS > $SPECIMEN_NAME.mapped_only.sam  #### take mapped reads only
-#samtools view $SPECIMEN_NAME.mapped_only.sam | awk '{print("@"$1"\n"$10"\n+\n"$11)}' > $tmp_folder/$SPECIMEN_NAME.mapped_only.fastq
-#######################################################################################################################################
-
 
 
 ##RENAME READS THAT ARE ALREADY TRIMMED FOR HAP CALLING
@@ -75,7 +65,7 @@ $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLI
 #-s   length difference cutoff, default 0.0     --- IT IS ESSENTIAL THAT YOU CHANGE THIS TO 1!!!!!!
 
 $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq \
--o $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq -c 1 -g 1 -d 0 -T 10 -s 1
+-o $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq -c 1 -g 1 -d 0 -T $number_of_threads -s 1
 
 
 ##STEP_5
@@ -118,7 +108,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
--num_threads 10 \
+-num_threads $number_of_threads \
 -out $tmp_folder/$SPECIMEN_NAME.BLASTING_TEMP/temp_result \
 -max_target_seqs 1 \
 -word_size 7 \
@@ -151,7 +141,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
--num_threads 10 \
+-num_threads $number_of_threads \
 -out $tmp_folder/$SPECIMEN_NAME.BLASTING_TEMP/$SPECIMEN_NAME.$tmp_var.raw_fasta_reads_with_hits \
 -max_target_seqs 1 \
 -word_size 7 \
@@ -191,8 +181,8 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
--num_threads 10 \
--out $working_directory/RESULTS/$SPECIMEN_NAME \
+-num_threads $number_of_threads \
+-out $working_directory/SPECIMEN_GENOTYPES/$SPECIMEN_NAME \
 -max_target_seqs 1 \
 -word_size 7 \
 -dust no \
@@ -204,6 +194,9 @@ cd $tmp_folder
 ###############################################
 #rm -r $tmp_folder/$SPECIMEN_NAME.BLASTING_TEMP#
 ###############################################
+
+rm -rf $SPECIMEN_NAME.BLASTING_TEMP
+rm -rf $SPECIMEN_NAME.hap_call.multi-seq
 
 done
 rm -rf *all_clusters.fast* *clean_merged*
@@ -220,6 +213,8 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_TYPE`
 do
 
 
+#SPECIMEN_NAME=STX12041_19
+
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
 -in $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.validated_junction_sequences.fasta \
 -input_type fasta \
@@ -232,7 +227,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -evalue 0.001 \
 -perc_identity 100 \
 -qcov_hsp_perc 100 \
--num_threads 10 \
+-num_threads $number_of_threads \
 -out $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.junction_only \
 -max_target_seqs 1 \
 -word_size 7 \
@@ -241,9 +236,8 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
 -outfmt "6 qseqid pident mismatch gapopen gaps sseq evalue bitscore"
 
 
-cat $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.junction_only >> $working_directory/RESULTS/$SPECIMEN_NAME
+cat $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.junction_only >> $working_directory/SPECIMEN_GENOTYPES/$SPECIMEN_NAME
 
-#cat $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.junction_only >> $working_directory/RESULTS/$SPECIMEN_NAME.junction.txt
 
 
 done
@@ -251,6 +245,3 @@ done
 cd $tmp_folder
 
 
-
-#rm SPECIMENS_TO_TYPE
-cd $working_directory
