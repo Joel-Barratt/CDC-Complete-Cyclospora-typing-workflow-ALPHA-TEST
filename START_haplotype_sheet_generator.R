@@ -1,10 +1,27 @@
 library(filesstrings)
+library(dplyr)
 
 
 setwd('./SPECIMEN_GENOTYPES')
 Seq_ID <- list.files(all.files = FALSE)
 
 new_db <- ""
+
+
+### Remove files with size of zero from list
+for (combine in Seq_ID){
+	
+if (file.info(combine)$size == 0){
+	
+Seq_ID <- Seq_ID[Seq_ID != combine]
+	
+}
+	
+	
+}
+
+#length(Seq_ID)
+
 
 for (combine in Seq_ID){
 	
@@ -48,7 +65,40 @@ genotype_sheet[add_x, current_marker] <- "X"
 
 #genotype_sheet <- as.matrix(genotype_sheet)
 
+
+
+
+
+### Now add those with zero markers to the bottom. This is important for report generation.
+
+Seq_ID <- list.files(all.files = FALSE)
+
+
+for (combine in Seq_ID){
+	
+if (file.info(combine)$size == 0){
+
+empty_rows <- c(combine, 1:(length(colnames(genotype_sheet))-1))
+
+empty_rows[2:length(empty_rows)] <- NA
+
+empty_rows <- t(as.data.frame(empty_rows))
+
+colnames(empty_rows) <- colnames(genotype_sheet)
+rownames(empty_rows) <- NULL
+	
+genotype_sheet <- rbind(genotype_sheet, empty_rows)
+
+rownames(genotype_sheet) <- NULL
+
+	
+  }
+
+}
+
+
 genotype_sheet[is.na(genotype_sheet)] <- ""
+
 
 setwd("..")
 

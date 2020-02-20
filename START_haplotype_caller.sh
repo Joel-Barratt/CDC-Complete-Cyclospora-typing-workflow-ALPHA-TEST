@@ -71,7 +71,7 @@ input_reads=/Users/joelbarratt/Documents/CYCLOSPORA/CYCLONE/TEST_INPUT_READS
 
 ####### HOW MANY CORES DO YOU HAVE AVAILABLE?
 
-NUMBER_OF_CORES=16
+NUMBER_OF_CORES=10
 
 
 #### WHAT IS THE LENGTH OF YOUR SPECIMEN NAME (I.E. YOUR NAMING CONVENTION)?
@@ -81,7 +81,7 @@ NUMBER_OF_CORES=16
 #### In 2019 the naming convention was STX10101-19 <- this is 11 characters long
 #### other examples: C-ChHenan <-- 9 characters long
 
-LENGTH_OF_SPECIMEN_NAMES=11
+LENGTH_OF_SPECIMEN_NAMES=10
 
 
 
@@ -187,20 +187,20 @@ cd $LOC/TMP/R1_FILES
 ##RENAME THE FASTQ FILES IN R1 FOLDER
    for file in *
                 do
-                     mv "$file" `echo "$file" | sed -e 's/-/_/g' | sed -e "s/\(.\{11\}\).*.\(.\{3\}\)/\1.R1.fastq\2/"`  #### NOTE THAT THIS WILL TRUNCATE THE FILE NAME TO 11 CHARACTERS -- IS THIS OK?
+                     mv "$file" `echo "$file" | sed -e 's/-/_/g' | sed -e "s/\(.\{$LENGTH_OF_SPECIMEN_NAMES\}\).*.\(.\{3\}\)/\1.R1.fastq\2/"`  #### NOTE THAT THIS WILL TRUNCATE THE FILE NAME TO 11 CHARACTERS -- IS THIS OK?
                 done
 
 ##MAKE LIST OF SPECIMENS TO GENOTYPE
    for file in *
                  do
-                      echo "$file" | sed -e 's/-/_/g' | sed -e "s/^\(.\{11\}\).*/\1/" >> $LOC/TMP/SPECIMENS_TO_TRIM   # MAKES A LIST OF SPECIMENS THAT NEED TRIMMING -  NOTE THAT THIS WILL TRUNCATE THE FILE NAME TO 11 CHARACTERS -- IS THIS OK?
+                      echo "$file" | sed -e 's/-/_/g' | sed -e "s/^\(.\{$LENGTH_OF_SPECIMEN_NAMES\}\).*/\1/" >> $LOC/TMP/SPECIMENS_TO_TRIM   # MAKES A LIST OF SPECIMENS THAT NEED TRIMMING -  NOTE THAT THIS WILL TRUNCATE THE FILE NAME TO 11 CHARACTERS -- IS THIS OK?
                  done
 
 cd $LOC/TMP/R2_FILES
 ##RENAME THE FASTQ FILES IN R2 FOLDER
    for file in *
                   do
-                       mv "$file" `echo "$file" | sed -e 's/-/_/g' | sed -e "s/\(.\{11\}\).*.\(.\{3\}\)/\1.R2.fastq\2/"` #  NOTE THAT THIS WILL TRUNCATE THE FILE NAME TO 11 CHARACTERS -- IS THIS OK?
+                       mv "$file" `echo "$file" | sed -e 's/-/_/g' | sed -e "s/\(.\{$LENGTH_OF_SPECIMEN_NAMES\}\).*.\(.\{3\}\)/\1.R2.fastq\2/"` #  NOTE THAT THIS WILL TRUNCATE THE FILE NAME TO 11 CHARACTERS -- IS THIS OK?
 
                   done
 

@@ -139,7 +139,7 @@ grep -l 'GATCGTGTT.*GCTGTAGATGGA' $my_fastas >> ../$SPECIMEN_NAME.list_of_sequen
 done
 
 
-
+###actually, you will try clustering these - not assembling them.
 mkdir ../assemble_these
 
 for READS in `cat ../$SPECIMEN_NAME.list_of_sequences_to_review.txt`
@@ -152,22 +152,47 @@ cd ../assemble_these
 
 #### Need to optimize this 95 will merge different Junction types so be warned but reduces false positives. ##################################
 
+#the line below is the original that uses CAP3
+#$working_directory/CAP3/cap3.macosx.intel64/cap3 $SPECIMEN_NAME.assemble_these_seqs.fasta -o 90 -p 99
 
-$working_directory/CAP3/cap3.macosx.intel64/cap3 $SPECIMEN_NAME.assemble_these_seqs -o 90 -p 99
+
+#length1=`cat *.contigs | wc -l`
+#if [ $length1 -gt 1 ];
+#then cat *.contigs >> ../$SPECIMEN_NAME.map_to_this.fasta
+
+#fi
+
+#length2=`cat *.singlets | wc -l`
+#if [ $length2 -gt 1 ] && [ $length1 == 0 ];
+#then cat *.singlets >> ../$SPECIMEN_NAME.map_to_this.fasta
+
+#fi
+
+##all above is good code that works, but it is slow. Will the code below produce the same result?
 
 
-length1=`cat *.contigs | wc -l`
-if [ $length1 -gt 1 ];
-then cat *.contigs >> ../$SPECIMEN_NAME.map_to_this.fasta
 
-fi
+############################ Will this suffice as it is quicker than CAP3?
 
-length2=`cat *.singlets | wc -l`
-if [ $length2 -gt 1 ] && [ $length1 == 0 ];
-then cat *.singlets >> ../$SPECIMEN_NAME.map_to_this.fasta
+awk '/^>/{print ">Contig_" ++i; next}{print}' < $SPECIMEN_NAME.assemble_these_seqs > $SPECIMEN_NAME.cluster_these_seqs.fasta
 
-fi
 
+##########################################################################################################################################################################################################################
+# WE CLUSTER THE CLUSTERS PREVIOUSLY FOUND. THIS IS BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
+$working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $SPECIMEN_NAME.cluster_these_seqs.fasta \
+-o $temp_folder/assemble_these/$SPECIMEN_NAME.junction_clusters.fasta -c 1 -g 1 -d 0 -T $number_of_threads 
+##########################################################################################################################################################################################################################
+
+$working_directory/CAP3/cap3.macosx.intel64/cap3 $temp_folder/assemble_these/$SPECIMEN_NAME.junction_clusters.fasta -o 95 -p 99.99
+
+
+
+cp  $SPECIMEN_NAME.junction_clusters.fasta.cap.contigs ../$SPECIMEN_NAME.map_to_this.fasta
+cat $SPECIMEN_NAME.junction_clusters.fasta.cap.singlets >> ../$SPECIMEN_NAME.map_to_this.fasta
+
+
+
+###### below here is as it was.
 cd ..
 
 
