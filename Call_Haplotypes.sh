@@ -216,13 +216,13 @@ do
 #SPECIMEN_NAME=STX12041_19
 
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
--in $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.validated_junction_sequences.fasta \
+-in $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FINAL.validated_junction_sequences.fasta \
 -input_type fasta \
 -dbtype nucl
 
 
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
--db $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.validated_junction_sequences.fasta \
+-db $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FINAL.validated_junction_sequences.fasta \
 -query $tmp_folder/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta \
 -evalue 0.001 \
 -perc_identity 100 \
