@@ -65,7 +65,7 @@ illumina_adapaters=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/TRIMMING/Illumin
 # WHAT IS THE LOCATION OF THE RAW ILLUMINA READS THAT YOU WANT ANALYZED?                                                                                   
 # R1 and R2 reads must be placed in the folder that you specify here. They will not be moved or modified.
 
-input_reads=/Users/joelbarratt/Documents/CYCLOSPORA/CYCLONE/TEST_INPUT_READS
+input_reads=/Users/joelbarratt/Documents/CYCLOSPORA/CYCLONE/THURS_MARCH
 
 
 
@@ -260,7 +260,7 @@ rm -rf R1_FILES R2_FILES
 
 bash ../Finding_New_Haps_SNP_Based_Module.sh
 
-bash ../Finding_New_Junction_Types_Module.sh
+bash ../Finding_New_Junction_Types_Module-v4.sh
 
 bash ../Call_Haplotypes.sh
 
