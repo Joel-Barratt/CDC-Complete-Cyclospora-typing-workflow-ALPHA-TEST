@@ -44,6 +44,7 @@ parameters = -GE:not=12 \
               SOLEXA_SETTINGS -AL:mrs=100 \
                               -CO:mnq=15 \
                               -CO:mrpg=10 \
+                              -CO:fnicpst=yes \
                               -AS:mrl=50 \
                               -AS:mrpc=20 \
                               -SK:pr=100

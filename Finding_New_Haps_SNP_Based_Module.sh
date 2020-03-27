@@ -202,7 +202,7 @@ for find_depth_and_alignments in `cat $tmp_directory/LIST_OF_LOCI_UNIQUE`
 
 
 $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.fastq \
--o $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq -p 1 -c 1 -g 1 -d 0 -T $number_of_threads -s 1
+-o $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq -p 1 -c 1 -g 1 -d 0 -T $number_of_threads -s 1 -M 16000
 
 
 ####THIS IS AN EMBOSS TOOL THAT WILL CONVERT FASTQ TO FASTA - you need to do this in order to turn the clusters into fasta files

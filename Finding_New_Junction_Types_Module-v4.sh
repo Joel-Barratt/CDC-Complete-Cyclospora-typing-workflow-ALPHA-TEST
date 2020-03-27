@@ -55,6 +55,7 @@ for SPECIMEN_NAME in `cat $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION`
 
 
 #SPECIMEN_NAME=`cat SPECIMENS_TO_SEARCH_JUNCTION | head -1`
+#SPECIMEN_NAME=S_TX019_18
 
 
 ## or does it work best here?
@@ -363,16 +364,110 @@ cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.f
 
 
 
+
+
+##########################################################################################################################################################################################################################
+# WE CLUSTER THE CLUSTERS PREVIOUSLY FOUND. THIS IS BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
+$working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta \
+-o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta -c 1 -g 1 -d 0 -T $number_of_threads 
+##########################################################################################################################################################################################################################
+
+
+
+
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta \
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta_BT_INDEX
+
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta_BT_INDEX \
+-U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q -D 20 -R 3 -N 0 -L 32 -i S,2,5 --threads $number_of_threads --local > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.OUTPUT.bam
+
+
+
+
+
+##### SORT BAM BEFORE MAKING CONSENSUS
+samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.OUTPUT.bam -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted.bam
+samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted.bam
+
+
+# call variants
+bcftools mpileup -Ou -f $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted.bam | bcftools call -mv -Oz -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls.vcf.gz
+
+bcftools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls.vcf.gz
+
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta | bcftools consensus $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls.vcf.gz > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001.consensus.fasta
+
+
+seqtk seq -F '#' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fastq
+
+
+
+
+#### CUTADAPT TO TRIM OFF THE PRIMERS -- primer lengths were shortened to less than the full primer.. sometimes when there was an error in the priming site, cutadapt wouldnt cut, so you end up with this wierd long sequence
+#### that had a piece of rubbish at the end, but an actual real junction type. If you continue to catch these wierd artifacts, you could try dropping a base or two from each primer -- but not too short! you will lose specificity.
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fastq -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq ### five prime adapter only -- was this TACCAAAGCATCCATCTACAGC --- changed to this: CCATCTACAGC
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq -a AACAC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq ### THREE prime adapter only # was this AACACGATCCGATTG but changed to this: AACACGATCC
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq -g GTGTT --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq ### five prime adapter only   ----- IF CONTIG IS REVERSED --- was this CAATCGGATCGTGTT -- changed to this: GGATCGTGTT
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq -a GCTGT --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim.fasta  --fasta ### five prime adapter only   ----- IF CONTIG IS REVERSED -- was this GCTGTAGATGGATGCTTTGGTA -- changed to this: GCTGTAGATGG
+
+#cat $SPECIMEN_NAME.REV_three_prime_trim.fasta >> $SPECIMEN_NAME.novel_junction_sequence_found.fasta
+
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim.fasta -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim2.fasta
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim2.fasta -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim3.fasta
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim3.fasta -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim4.fasta
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim4.fasta -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim5.fasta
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim5.fasta -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim6.fasta
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim6.fasta -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
+
+
+
+
+
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta \
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta_BT_INDEX
+
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta_BT_INDEX \
+-U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q -D 20 -R 3 -N 0 -L 32 -i S,2,5 --threads $number_of_threads --local > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.OUTPUT2.bam
+
+
+
+##### SORT BAM BEFORE MAKING CONSENSUS
+samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.OUTPUT2.bam -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted2.bam
+samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted2.bam
+
+
+# call variants
+bcftools mpileup -Ou -f $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted2.bam | bcftools call -mv -Oz -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls2.vcf.gz
+
+bcftools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls2.vcf.gz
+
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | bcftools consensus $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls2.vcf.gz > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00002.consensus.fasta
+
+
+
+
+
+
+
+
 ###get your sequences on one line
-/usr/local/bin/gsed -e 's/\(^>.*$\)/#\1#/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.consensus.fasta \
+/usr/local/bin/gsed -e 's/\(^>.*$\)/#\1#/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00002.consensus.fasta \
 | tr -d "\r" | tr -d "\n" | /usr/local/bin/gsed -e 's/$/#/' | tr "#" "\n" | /usr/local/bin/gsed -e '/^$/d' > \
-$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
 
 ### now blast the consensus.
 ### if the original had a hit in the database, remove the consensus
 
 
-for CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
+
+for CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00002.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
 
 do
 
@@ -381,14 +476,14 @@ echo $CHECK_CONSENSUS_DRAFT_1 > $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
 
 # echo ">new_junction_4_sequence_bb" $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
 
-grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.fasta
-grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.fasta
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.fasta
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.fasta
 
 rm $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
 
 if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.fasta | tail -1` == `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.fasta | tail -1` ];
 
-then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
 
 fi
 
@@ -397,7 +492,69 @@ done
 
 
 
-for SCND_CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
+#####check for contigs that have N bases in their sequence and other junk
+
+for CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
+
+do
+
+echo $CHECK_CONSENSUS_DRAFT_1 > $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+
+
+# echo ">new_junction_4_sequence_bb" $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_CONSENSUS.fasta
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta > $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_BEFORE_consensus.fasta
+
+rm $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+
+
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_CONSENSUS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
+
+then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+
+#then echo "The consensus has an N base"
+
+fi
+
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_BEFORE_consensus.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
+
+#then echo "The original has an N base"
+
+then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+
+fi
+
+
+if [ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta | tail -1 | wc -l` -eq 0 ] && \
+[ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
+
+#then echo "The original has an N base"
+
+
+then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
+
+fi
+
+if [ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ] && \
+[ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
+
+#then echo "The original has an N base"
+
+
+then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
+/usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+
+fi
+
+done
+
+
+
+
+
+
+for SCND_CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta | /usr/local/bin/gsed 's/>//g'`
 
 do
 
@@ -406,10 +563,10 @@ echo $SCND_CHECK_CONSENSUS_DRAFT_1 > $temp_folder/CONFIRMED_JUNCTIONS/reference.
 
 # echo ">new_junction_4_sequence_bb" $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
 
-grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.fasta
-grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.fasta
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.fasta
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta > $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.fasta
 
-rm $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+#rm $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
 
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
 -in $temp_folder/JUNCTION_REFS.fasta \
@@ -448,35 +605,35 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn -db $temp_folder/JUNCTION_
 
 if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` == `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` ];
 
-then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
 
 fi
 
 if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` -eq 0 ] && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` -gt 0 ];
 
-then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
 
 fi
 
 
 if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` -eq 0 ] && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` -eq 0 ];
 
-then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
 
 fi
 
 
 if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` -eq 0 ] && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` -gt 0 ];
 
-then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
 
 fi
 
 done
 
 
-cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta
-cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta
 
 
 rm $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT*
@@ -487,11 +644,50 @@ rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fa
 #rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted.ba*
 #rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta
 rm -rf $temp_folder/CONFIRMED_JUNCTIONS/artefact_remove
-rm $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT*
-rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+#rm $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT*
+#rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fasta
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.OUTPUT2.bam
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.REV_three_prime_trim*
+rm $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1*
 
 
 
+##### JOEL YOU MIGHT WANT TO CLUSTER file Draft 1.1 here in later versions ---- some of your contigs are identical
+###This is because there is potential for 
+
+
+############# NOW LETS CLUSTER ---new addition. test on MO023
+
+##########################################################################################################################################################################################################################
+# WE CLUSTER THE CLUSTERS PREVIOUSLY FOUND. THIS IS BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
+$working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta \
+-o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fasta -c 1 -g 1 -d 0 -T $number_of_threads 
+##########################################################################################################################################################################################################################
+
+
+
+
+seqtk seq -F '#' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fastq
+
+
+
+####THIS NEXT PART IS NEW TEST ---- NEED TO CONVERT TO A FASTQ OR IT WILL NOT WORK <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+## CUTADAPT TO TRIM OFF THE PRIMERS -- primer lengths were shortened to less than the full primer.. sometimes when there was an error in the priming site, cutadapt wouldnt cut, so you end up with this wierd long sequence
+#### that had a piece of rubbish at the end, but an actual real junction type. If you continue to catch these wierd artifacts, you could try dropping a base or two from each primer -- but not too short! you will lose specificity.
+
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fastq -g ACAGC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq ### five prime adapter only -- was this TACCAAAGCATCCATCTACAGC --- changed to this: CCATCTACAGC
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq -a AACAC --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq ### THREE prime adapter only # was this AACACGATCCGATTG but changed to this: AACACGATCC
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq -g GTGTT --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq ### five prime adapter only   ----- IF CONTIG IS REVERSED --- was this CAATCGGATCGTGTT -- changed to this: GGATCGTGTT
+/Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq -a GCTGT --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta  --fasta ### five prime adapter only   ----- IF CONTIG IS REVERSED -- was this GCTGTAGATGGATGCTTTGGTA -- changed to this: GCTGTAGATGG
+
+
+##########################################################################################################################################################################################################################
+# WE CLUSTER THE CLUSTERS PREVIOUSLY FOUND. THIS IS BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
+$working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta \
+-o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta -c 1 -g 1 -d 0 -T $number_of_threads 
+##########################################################################################################################################################################################################################
 
 
 
@@ -501,10 +697,10 @@ rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.consensus.fa
 
 ### this is where we generate draft 2 of the junction sequences
 
-$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta \
-$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta_BT_INDEX
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta \
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta_BT_INDEX
 
-$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta_BT_INDEX \
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta_BT_INDEX \
 -U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q -D 20 -R 3 -N 0 -L 32 -i S,2,5 --threads $number_of_threads --local > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.OUTPUT.bam
 
 
@@ -538,7 +734,7 @@ done
 
 
 
-cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta
 
 
 /usr/local/bin/gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.contigs_with_coverage_less_than.10.txt
@@ -553,16 +749,153 @@ done
 
 rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1*
 rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_0*
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT* 
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_H*
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1*
+
+
+#####DRAFT 2 RELAXED
+
+
+
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta \
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_consensus.fasta_BT_INDEX
+
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_consensus.fasta_BT_INDEX \
+-U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q --threads $number_of_threads --local > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED.OUTPUT.bam
+
+
+
+##### SORT BAM BEFORE MAKING CONSENSUS
+samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED.OUTPUT.bam -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_sorted.bam
+samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_sorted.bam
+
+
+# call variants
+bcftools mpileup -Ou -f $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_sorted.bam | bcftools call -mv -Oz -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.calls3.vcf.gz
+
+bcftools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.calls3.vcf.gz
+
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta | bcftools consensus $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.calls3.vcf.gz > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.RELAXED.consensus.fasta
+
+
+### NOW WE DO SOME BLASTING TO CHECK FOR THE BUGS.
+
+
+
+
+
+###get your sequences on one line
+/usr/local/bin/gsed -e 's/\(^>.*$\)/#\1#/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.RELAXED.consensus.fasta \
+| tr -d "\r" | tr -d "\n" | /usr/local/bin/gsed -e 's/$/#/' | tr "#" "\n" | /usr/local/bin/gsed -e '/^$/d' > \
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+
+
+
+
+
+
+for SCND_CHECK_CONSENSUS_DRAFT_2 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
+
+do
+
+echo $SCND_CHECK_CONSENSUS_DRAFT_2 > $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+
+
+# echo ">new_junction_4_sequence_bb" $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.fasta
+grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.fasta
+
+rm $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
+
+$working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
+-in $temp_folder/JUNCTION_REFS.fasta \
+-input_type fasta \
+-dbtype nucl
+
+$working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn -db $temp_folder/JUNCTION_REFS.fasta \
+-query $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.fasta \
+-word_size 7 \
+-evalue 0.001 \
+-perc_identity 100 \
+-qcov_hsp_perc 100 \
+-num_threads $number_of_threads \
+-out $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result \
+-max_target_seqs 1 \
+-dust no \
+-soft_masking false \
+-outfmt "6 qseqid qseq"
+
+
+
+$working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn -db $temp_folder/JUNCTION_REFS.fasta \
+-query $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.fasta \
+-word_size 7 \
+-evalue 0.001 \
+-perc_identity 100 \
+-qcov_hsp_perc 100 \
+-num_threads $number_of_threads \
+-out $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result \
+-max_target_seqs 1 \
+-dust no \
+-soft_masking false \
+-outfmt "6 qseqid qseq"
+
+
+
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` == `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` ];
+
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+
+fi
+
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` -eq 0 ] && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` -gt 0 ];
+
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+
+fi
+
+
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` -eq 0 ] && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` -eq 0 ];
+
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+
+fi
+
+
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` -eq 0 ] && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` -gt 0 ];
+
+then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta
+
+fi
+
+done
+
+
+
+
+
+
+
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.AFTER_RELAX.fasta
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.AFTER_RELAX.fasta
+
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.AFTER_RELAX.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta
+
+
+
+
 
 
 
 
 ################################################## THIRD PASS FOR IDENTIFYING THE NEXT JUNCTION
 
-$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta \
-$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta_BT_INDEX
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta \
+$temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta_BT_INDEX
 
-$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta_BT_INDEX \
+$working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2 -x $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta_BT_INDEX \
 -U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q -D 20 -R 3 -N 0 -L 32 -i S,2,5 --threads $number_of_threads --local > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.OUTPUT.bam
 
 
@@ -572,6 +905,9 @@ samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.aln.sorte
 
 
 samtools depth -aa -d 0 $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.aln.sorted.bam > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.coverage # exports a file containing the coverage.
+
+
+
 
 
 
@@ -594,7 +930,7 @@ done
 
 /usr/local/bin/gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff.txt
 
-cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.consensus.fasta
+cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.consensus.fasta
 
 ## REMOVES HAPLOTYPES FROM YOUR POTENTIAL LIST OF NEW ONES THAT POSSESS LOW COVERAGE
 for HAPS_TO_REMOVE in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff.txt`
@@ -612,6 +948,10 @@ rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2*
 $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.consensus.fasta \
 -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.CLUSTERS_consensus.fasta -c 1 -g 1 -d 0 -T $number_of_threads 
 ##########################################################################################################################################################################################################################
+
+
+
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.AFTER_RELAX*
 
 
 
@@ -747,7 +1087,8 @@ do
 done < $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FINAL.validated_junction_sequences.fasta
 
 rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4*
-
+rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage*
+rm $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2*
 
 
 for FOOBAR in `ls -1`

@@ -65,7 +65,7 @@ $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLI
 #-s   length difference cutoff, default 0.0     --- IT IS ESSENTIAL THAT YOU CHANGE THIS TO 1!!!!!!
 
 $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq \
--o $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq -c 1 -g 1 -d 0 -T $number_of_threads -s 1
+-o $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq -c 1 -g 1 -d 0 -T $number_of_threads -s 1 -M 16000
 
 
 ##STEP_5
