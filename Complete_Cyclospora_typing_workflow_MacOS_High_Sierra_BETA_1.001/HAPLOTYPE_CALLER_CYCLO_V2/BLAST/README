@@ -1,1 +1,5 @@
+# Unfortunately, the version of BLAST required for this workflow was too large to upload to GitHub. Please download the following version of BLAST:
+# ncbi-blast-2.9.0+-x64-macosx.tar.gz
+# It must be precisely this version!!!
+# Place in the present folder - DO NOT MODIFY THE NAME OF THE FILE.
 # Extract and compile this version of BLAST here. DO NOT CHANGE THE NAME OF ANY FILES OR DIRECTORIES.
