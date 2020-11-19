@@ -26,3 +26,10 @@ In this folder you will see a .zip file called "SPECIMEN_GENOTYPES.zip"
 
 Unzip it. This is where the genotype of every specimen will be written. This folder will contain the genotype of numerous specimens typed in 2019. You can remove these or you can practice running various modules of the workflow on these files.
 
+
+
+#### THIRD THING TO DO BEFORE RUNNING THIS WORKFLOW
+
+1. Open the "haplotype_sheets" folder, read the placeholder file, and then delete it.
+
+2. Open the "ensemble_matrices" folder, read the placeholder file, and then delete it.
