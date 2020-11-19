@@ -1,0 +1,14 @@
+Please read this.
+
+
+#### FIRST THING TO DO BEFORE RUNNING THIS WORKFLOW
+
+First you will need to go into this directory:
+
+/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001/EUKARYOTYPING
+
+In this folder you will see a .zip file called "REFERENCE_POPULATION.zip"
+
+Unzip it. If you want to use these files as your reference population, thats fine. Alternatively, remove them and replace them with a reference of your choosing.
+
+
