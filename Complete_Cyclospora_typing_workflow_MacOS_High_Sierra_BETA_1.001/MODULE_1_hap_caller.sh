@@ -1,8 +1,8 @@
 #!/bin/bash
 
+#UP November 19, 2020
 
-
-package=`echo "MODULE_1_hapl_caller.sh"`
+package=`echo "MODULE_1_hap_caller.sh"`
 cyclone_version=`echo "Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001"`
 HAPLOTYPE_CALLER=`echo "HAPLOTYPE_CALLER_CYCLO_V2"`
 
@@ -314,32 +314,36 @@ echo ""
 
 
 
-#### IF YOU FIND A NEW HAPLOTYPE, WHAT IS THE MINIMUM DEPTH REQUIRED FOR IT TO BE CONSIDERED REAL? THIS IS SPECIFICALLY FOR NEW HAPLOTYPE DISCOVERY.
+#### IF YOU FIND A NEW HAPLOTYPE, WHAT IS THE MINIMUM DEPTH REQUIRED FOR IT TO BE CONSIDERED REAL? THIS IS SPECIFICALLY FOR *NEW* HAPLOTYPE DISCOVERY.
 
-##### PLEASE NOTE THAT THERE IS A DYNAMIC DEPTH DETERMINATION FEATURE OF THIS SOFTWARE FOR DETECTING NEW HAPLOTYPES, AND THIS WILL SLIDE DEPENDING ON THE COVERAGE OBTAINED FOR A PARTICULAR AMPLICON
-##### The setting below only comes into affect if you have very low coverage for a particular amplicon. For example, if you have 20 fold coverage of your marker, would you 
-##### feel comfortable calling two new haplotypes from this (one with coverage 12 and another with coverage 8 for example)? I don't, so I set this threshold to 100 per new haplotype as a default.
+##### PLEASE NOTE THAT THIS SOFTWARE HAS A DYNAMIC DEPTH DETERMINATION FEATURE THAT IS IMPLEMENTED WHEN DETECTING NEW HAPLOTYPES. THEREFORE, COVERAGE REQUIREMENTS WILL SLIDE UP OR DOWN 
+##### DEPENDING ON THE COVERAGE OBTAINED FOR A PARTICULAR AMPLICON
+##### If  you have 20 fold depth of your marker, would you feel comfortable calling two new haplotypes from this (one with depth 12 and another with depth 8 for example)?
+##### I don't, so I set this threshold to 100 per new haplotype as a default - as an absolute minimum to support a novel haplotype (the user can only reset the absolute minimum).
+##### Setting an absolute minimum at 100 means that if 2 *NOVEL* haplotypes are detected in a specimen, they will each need depth of 100 or greater (i.e. at least 200 reads, 100 for each)
+##### before that haplotype is written to file and stored in the haplotype database for future reference.
 ##### Alternatively, if the locus has 500 fold coverage, new haplotypes are called only if their coverage is equal to, or rises above 25% of the total population of reads that map to this locus;
 ##### that is 125 reads in this case. If the coverage of a locus is 1000, new haplotypes must have coverage of 250 reads at least. Note that this is based on average coverage across the locus.
-##### I set this to 100 as a default -- remember this only comes into affect when the coverage of a locus is very low. Otherwise a sliding cutoff is used.
+##### Also, I set the absolute minimum to 100 as a default -- if this is exceeded the sliding cutoff is used.
 
-REQUIRED_DEPTH_NEW_HAP=$Nflag
+REQUIRED_DEPTH_NEW_HAP=$Nflag  ## a default of 100 is provided if no argument is supplied for this flag.
 
-##########
-### THIS IS NOT FOR HAPLOTYPE DISCOVERY -- THIS IS THE DEPTH REQUIRED TO DETERMINE IF A SPECIMEN POSSESSES A HAPLOTYPE. THIS IS WHY THE DEPTH IS LESS.
-#### THIS IS A LESS STRINGENT CUTOFF
-##### PLEASE NOTE THAT THERE IS A DYNAMIC DEPTH DETERMINATION FEATURE OF THIS SOFTWARE FOR DETECTING NEW HAPLOTYPES, AND THIS WILL SLIDE DEPENDING ON THE COVERAGE OBTAINED FOR A PARTICULAR AMPLICON
-##### The setting below only comes into affect if you have very low coverage for a particular amplicon. For example, if you have 20 fold coverage of your marker, would you 
-##### feel comfortable calling two haplotypes from this (one with coverage 12 and another with coverage 8 for example)? I don't, so I set this threshold to 20 to determine if a haplotype exists in a specimen.
+##### REQUIRED DEPTH OF SEQUENCING TO SUPPORT THE PRESENCE OF A HAPLOTYPE WITHIN A SPECIMEN
+#####
+##### THIS IS NOT FOR HAPLOTYPE DISCOVERY -- THIS IS THE DEPTH REQUIRED TO DETERMINE IF A SPECIMEN POSSESSES A HAPLOTYPE THAT HAS ALREADY BEEN OBSERVED BEFORE. 
+##### THIS WHY THIS IS A LESS STRINGENT CUTOFF THAN THE ONE USED FOR NOVEL HAPLOTYPE DISCOVERY.
+##### PLEASE NOTE THAT THERE IS ALSO A DYNAMIC DEPTH DETERMINATION FEATURE OF THIS SOFTWARE, AND THIS WILL SLIDE DEPENDING ON THE DEPTH OBTAINED FOR A PARTICULAR AMPLICON
+##### If you have 20 fold depth for your marker, would you feel comfortable calling two haplotypes from this (one with depth 12 and another with depth 8 for example)? I don't, so I set 
+##### an absolute minimum depth threshold to 20 reads to determine if a haplotype exists in a specimen. So, if a specimen has 2 haplotypes for a given locus, 40 reads are required for this locus
+##### (20 reads for each haplotype) before the haplotypes are confirmed as being present in the specimen under investigation.
 ##### Alternatively, if the locus has 500 fold coverage, new haplotypes are called only if their coverage is equal to, or rises above 10% of the total population of reads that map to this locus;
-##### that is 50 reads in this case. If the coverage of a locus is 1000, new haplotypes must have coverage of 100 reads at least. Note that this is based on average coverage across the locus.
+##### that is 50 reads in this case. If the coverage of a locus is 1000, new haplotypes must have coverage of 100 reads at least.
 
-MINIMUM_DEPTH_TO_ASSIGN_HAPLPLOTYPES_TO_SPECIMENS=$Aflag #### I set this to 20 as a default -- remember this only comes into affect when the coverage of a locus is very low. Otherwise a sliding cutoff is used.
+MINIMUM_DEPTH_TO_ASSIGN_HAPLPLOTYPES_TO_SPECIMENS=$Aflag  #### I set this to 20 as a default -- remember this is only the absolute minimum.
 
 
-
-# IN WHAT DIRECTORY DID YOU PLACE THE "CYCLONE" FOLDER?
 working_directory=$Cflag/$cyclone_version/
+
 
 illumina_adapaters=$Iflag                                          
                                                                                                                                                
@@ -357,29 +361,22 @@ AMOUNT_OF_RAM=$Rflag
 
 
 
-
-#### PROVIDE THE LOCATION OF A FASTA FILE THAT CONTAINS YOUR REFERENCES ****BEFORE**** YOU SPLIT THE HAPLOTYPES
-## THESE SEQUENCES WILL BE USED TO RECOVER READS THAT MAP TO YOUR REFERENCES
-
-#### NON JUNCTION BELOW
+# REFERENCE FILE 1
 read_recovery_refs=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/READ_RECOVERY/MAPPING_NON_JUNCTION_REFERENCES_WITH_PRIMER_FEB_2020.fasta
 
 
-#### JUNCTION BELOW
+# REFERENCE FILE 2
 read_recovery_refs_JUNCTION=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/READ_RECOVERY/MAPPING_JUNCTION_WITH_PRIMERS_FEB_2020.fasta
 
 
-# WHAT IS THE LOCATION OF YOUR REFERENCE SEQUENCES (YOUR KNOWN CYCLOSPORA HAPLOTYPES -- THESE ARE THE ONES WHERE YOU IDENTIFY HAPLOTYPES AFTER BLASTING)?
-# The location below should be fine for the automatic Cyclospora workflow - you probably shouldn't modify this.
-
-#FOR CYCLOSPORA THIS MUST INCLUDE ALL HAPLOTYPES AFTER SEGMENTING, AS WELL AS ALL JUNCTION TYPES WITHOUT PRIMER SEQUENCE.
+# REFERENCE FILE 3
 complete_reference_database=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/BLASTING/ORIGINAL_REFS/CYCLOSPORA_REFERENCES_SHORTENED_FEB_2020.fasta
 
 
-###### ADD LOCATION OF THE BED FILE AS A VARIABLE HERE --- IF RUNNING CYCLOSPORA DO NOT INCLUDE THE JUNCTION SEQUNECES HERE.
+# REFERENCE FILE 4
 bed_references=$working_directory$HAPLOTYPE_CALLER/REF_SEQS/BED_FILE/CYCLOSPORA_FEB_11_2020.bed
 
-####IF YOU MADE THIS BED FILE USING XLSX YOU WILL NEED TO RUN DOS2UNIX ON THE FILE TO CONVERT IT OR THE SCRIPT WONT RUN CORRECTLY!
+#IF YOU MADE THIS BED FILE USING XLSX YOU WILL NEED TO RUN DOS2UNIX ON THE FILE TO CONVERT IT OR THE SCRIPT WONT RUN CORRECTLY!
 
 
 
@@ -572,7 +569,7 @@ cd $LOC/
 
 rm -rf TMP_TYPES
 
-echo "The CYCLONE Cyclospora haplotype calling workflow has run to completion.
+echo "The Cyclospora haplotype calling workflow has run to completion.
 "
 
 
