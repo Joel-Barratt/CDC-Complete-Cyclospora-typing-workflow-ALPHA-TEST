@@ -22,7 +22,7 @@ stringency=95
 
 
 # What number of clusters do you want to start at?
-cluster_min=2
+cluster_min=1
 
 
 # What number of clusters do you want to finish at?
