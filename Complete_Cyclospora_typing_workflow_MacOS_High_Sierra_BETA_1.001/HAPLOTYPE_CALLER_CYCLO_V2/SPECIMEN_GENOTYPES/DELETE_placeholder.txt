@@ -1,1 +1,0 @@
-# haplotype lists for each specimen subjected to this workflow will be printed in this directory. DELETE THIS BEFORE RUNNING.
