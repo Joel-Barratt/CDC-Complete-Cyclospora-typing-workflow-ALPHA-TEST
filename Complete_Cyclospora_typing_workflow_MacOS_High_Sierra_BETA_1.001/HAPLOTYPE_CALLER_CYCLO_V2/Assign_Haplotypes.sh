@@ -1,4 +1,6 @@
-###THIS MODULE WILL ACTUALLY CALL THE HAPLOTYPES
+## ASSIGN HAPLOTYPES TO EACH SPECIMEN BEING ANALYZED
+#UP November 19, 2020
+
 #!/bin/bash
 
 working_directory=`cat RUN_DIR`
@@ -9,7 +11,8 @@ minimum_depth_for_haplotype_assignment=`cat DEPTH_FOR_CALLING`
 RAM_NEEDED=`cat RAM_ALLOCATION`
 
 
-##MAKE LIST OF SPECIMENS TO GENOTYPE
+## MAKE LIST OF SPECIMENS REQUIRING GENOTYPING
+
 cd $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/
 
 for file in *
@@ -35,7 +38,7 @@ if [ `cat $file_check | wc -l` -gt 0 ];
 fi
 
 
-#####TURN YOUR CLUSTERS INTO A BLAST DATABASE
+## TURN CLUSTERS INTO A BLAST DATABASE
 
 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
 -in $tmp_folder/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta \
@@ -47,23 +50,14 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
                                                                                 do
 
 
-                                                                ##RENAME READS THAT ARE ALREADY TRIMMED FOR HAP CALLING
+                                                                ## RENAME READS THAT ARE ALREADY TRIMMED FOR HAP CALLING
 
                                                                 cat $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq | \
                                                                 awk '{if(NR%4==1) $0=sprintf("@Read_%d",(1+i++)); print;}' >  \
                                                                 $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq
 
 
-                                                                ##### CLUSTER USING CD-HIT
-                                                                #FLAGS
-                                                                # c = % similarity of bins
-                                                                # g =  1 or 0, default 0 -- explanation below:
-                                                                #By cd-hit’s default algorithm, a sequence is clustered to the first
-                                                                #cluster that meet the threshold (fast mode). If set to 1, the program
-                                                                #will cluster it into the most similar cluster that meet the threshold
-                                                                #(accurate but slow mode)
-                                                                # d = length of description in .clstr file, default 20. If set to 0, it takes the fasta defline and stops at first space
-                                                                #-s   length difference cutoff, default 0.0     --- IT IS ESSENTIAL THAT YOU CHANGE THIS TO 1!!!!!!
+                                                                ## CLUSTER USING CD-HIT - *DO NOT* change this FLAGS
 
                                                                 $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est \
                                                                 -i $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq \
@@ -71,12 +65,12 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
                                                                 -c 1 -g 1 -d 0 -T $number_of_threads -s 1 -M $RAM_NEEDED
                                 
 
-                                                                ####THIS IS AN EMBOSS TOOL THAT WILL CONVERT FASTQ TO FASTA - you need to do this in order to turn the clusters into fasta files
+                                                                ## EMBOSS TOOL TO CONVERT FASTQ TO FASTA
                                                                 seqret -sequence $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq \
                                                                 -outseq $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fasta
 
 
-                                                                ###### THIS NEXT STEP WILL FILTER CLUSTERS BY SIZE
+                                                                ## FILTER CLUSTERS BY SIZE
                                                                 perl $working_directory/make_multi_seq.pl \
                                                                 $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fasta \
                                                                 $tmp_folder/$SPECIMEN_NAME.clean_merged_CLUSTERS.fq.clstr \
@@ -90,7 +84,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
                                                                 cd $SPECIMEN_NAME.hap_call.multi-seq
 
 
-                                                                ####THIS IS AN EMBOSS TOOL THAT WILL CONVERT FASTQ TO FASTA
+                                                                ## CONVERT FASTQ TO FASTA
                                                                 seqret -sequence $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq \
                                                                 -outseq $tmp_folder/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/RENAMED.$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAPLOTYPE_CALLING.fasta
 
@@ -102,7 +96,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
                                             do
 
 
-                                ##### BLAST YOUR KNOWN REFERENCES AGAINST THAT DATABASE OF CLUSTERS
+                                ## BLAST YOUR KNOWN REFERENCES AGAINST THAT DATABASE OF CLUSTERS
                                 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
                                 -db $tmp_folder/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta \
                                 -query $cluster_file \
@@ -183,7 +177,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
                                                                 -dbtype nucl
 
 
-                                                                #####BLAST YOUR REFERENCES AGAINST THAT DATABASE OF CLUSTERS
+                                                                ## BLAST YOUR REFERENCES AGAINST DATABASE OF CLUSTERS
                                                                 $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn \
                                                                 -db $tmp_folder/$SPECIMEN_NAME.BLASTING_TEMP/$SPECIMEN_NAME.all_clusters.fasta \
                                                                 -query $tmp_folder/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta \
@@ -206,7 +200,7 @@ $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
 
                                                                                  done
 
-rm -rf *all_clusters.fast* *clean_merged*
+     rm -rf *all_clusters.fast* *clean_merged*
 
 
 
@@ -217,8 +211,8 @@ rm -rf *all_clusters.fast* *clean_merged*
 
 
 
-###The code below will only apply to the Cyclospora Cmt Junction.
-
+                                ## The for loop below will only apply to the Cyclospora Cmt Junction.
+                                #####################################################################################################################################
 
                                 for SPECIMEN_NAME in `cat SPECIMENS_TO_TYPE`
                                          do
@@ -247,6 +241,8 @@ rm -rf *all_clusters.fast* *clean_merged*
                                                cat $tmp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.junction_only >> $working_directory/SPECIMEN_GENOTYPES/$SPECIMEN_NAME
 
                                          done
+                                ###################################################################################################################################
+
 
 cd $tmp_folder
 

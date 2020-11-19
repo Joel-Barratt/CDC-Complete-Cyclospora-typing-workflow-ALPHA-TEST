@@ -1,6 +1,10 @@
 library(filesstrings)
 library(dplyr)
 
+#UP November 19, 2020
+
+
+
 dir.create("TMP_TYPES")
 
 setwd('./SPECIMEN_GENOTYPES')
@@ -80,10 +84,6 @@ genotype_sheet[add_x, current_marker] <- "X"
 	}
 	
 }
-
-#genotype_sheet <- as.matrix(genotype_sheet)
-
-
 
 
 

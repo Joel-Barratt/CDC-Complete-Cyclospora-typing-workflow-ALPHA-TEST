@@ -1,7 +1,7 @@
 #!/bin/bash
 #####################################################################################################################################################################
 
-### need pysam installed. pip install pysam
+#UP November 19, 2020
 
 working_directory=`cat RUN_DIR`
 read_recovery_refs=`cat READ_REC` 
@@ -47,7 +47,7 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
                                                       fi
 
 
-                                           #### MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
+                                           ## MAP READS TO THE REFERENCE DATABASE OF NON-JUNCTION MARKERS TO OBTAIN CORRECT READS
                                            bwa index $tmp_directory/READ_RECOVERY_REFERENCE_SEQUENCES.fasta
                                            bwa mem -t $number_of_threads READ_RECOVERY_REFERENCE_SEQUENCES.fasta $tmp_directory/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq > $SPECIMEN_NAME.alignment.sam
                                            samtools view -h -F 4 $SPECIMEN_NAME.alignment.sam | samtools view -bS > $SPECIMEN_NAME.mapped_only.sam  #### take mapped reads only
@@ -62,7 +62,7 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
                                            cd $SPECIMEN_NAME.MAPPING
 
 
-                                           ###### MAP TO LONG (UNSPLIT) REFERENCES using Bowtie
+                                           ## MAP TO LONG (UNSPLIT) REFERENCES using Bowtie
                                            $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build \
                                            $tmp_directory/FULL_LENGTH_MARKERS.fasta \
                                            $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.BT_INDEX
@@ -95,30 +95,30 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
                          
 
                                                            samtools view  -bu -F 4  sorted.$SPECIMEN_NAME.alignment.bam $marker_range | \
-                                                           java -jar /Users/joelbarratt/jvarkit/dist/samjs.jar  \
+                                                           java -jar /Library/Java/Extensions/samjs.jar  \
                                                            -e "record.alignmentStart <= $left_trim && record.alignmentEnd >= $right_trim"  --samoutputformat BAM \
                                                            -o $tmp_directory/$SPECIMEN_NAME.MAPPING/OVERLAP_ONLY.$SPECIMEN_NAME.$find_depth_and_alignments.bam
 
 
-                                                           #SOFT CLIP FROM BED FILE
-                                                           java -jar /Users/joelbarratt/jvarkit/dist/pcrclipreads.jar --interval $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.bed  \
+                                                           ## SOFT CLIP FROM BED FILE
+                                                           java -jar /Library/Java/Extensions/pcrclipreads.jar --interval $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.bed  \
                                                            $tmp_directory/$SPECIMEN_NAME.MAPPING/OVERLAP_ONLY.$SPECIMEN_NAME.$find_depth_and_alignments.bam --samoutputformat BAM \
                                                            -o $tmp_directory/$SPECIMEN_NAME.MAPPING/SOFT_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only.bam
 
-                                                           ##REMOVES SOFT CLIPPED BASES
-                                                           java -jar /Users/joelbarratt/jvarkit/dist/biostar84452.jar \
+                                                           ## REMOVES SOFT CLIPPED BASES
+                                                           java -jar /Library/Java/Extensions/biostar84452.jar \
                                                            $tmp_directory/$SPECIMEN_NAME.MAPPING/SOFT_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only.bam \
                                                            > $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only.bam
  
                          
-                                                           #extract only mapped reads
+                                                           ## EXTRACT ONLY MAPPED READS
                                                            samtools view -h -F 4 $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only.bam \
                                                            | samtools view -bS > $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.sam  #### take mapped reads only
                                                            samtools view $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.sam \
                                                            | awk '{print("@"$1"\n"$10"\n+\n"$11)}'  > $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.fastq
 
 
-                                                          ##### EXTRACT COVERAGE INFORMATION --- THIS INFORMATION WILL BE USED TO DETERMINE DYNAMIC COVERAGE THRESHOLDS
+                                                          ## EXTRACT COVERAGE INFORMATION --- THIS INFORMATION WILL BE USED TO DETERMINE DYNAMIC COVERAGE THRESHOLDS
                                                           samtools sort -T -n $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only.bam \
                                                           -o $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only_aln_sorted.bam
                                                           samtools index $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.map_to_marker_only_aln_sorted.bam
@@ -129,33 +129,40 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
 
 
 
-                                                          ### The two lines below are used to determine the sliding cutoff for haplotype assignment to a specimen (are not used in the present workflow to decide if we want to write a new haplotype  
-                                                          ### to our database. For the haplotype assignment workflow, want at least 20 reads OR greater than 10% of the entire coverage whichever of these two values is higher. I do this as part
-                                                          ### of the current workflow to save time (saves me having to map reads again). So the results of the next two steps will be written to file now, just to be references during the haplotype assignment workflow.
+                                                          ### The two lines below are used to determine the sliding cutoff for haplotype assignment to a specimen 
+                                                          ### (are not used in the present workflow to decide if we want to write a new haplotype  
+                                                          ### to our database. For the haplotype assignment workflow, want at least 20 reads OR greater than 10% of
+                                                          ### the entire coverage whichever of these two values is higher. I do this as part
+                                                          ### of the current workflow to save time (saves me having to map reads again). 
+                                                          ### So the results of the next two steps will be written to file now, just to be references during the haplotype assignment workflow.
+
                                                           average_coverage=`awk -v N=3 '{ sum += $N } END { if (NR > 0) print sum / NR }' < $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.coverage`
-                                                          echo "scale=0; ($average_coverage*0.10)/1" | bc > $tmp_directory/$SPECIMEN_NAME.COVERAGE_CUTOFF_PER_LOCUS_FOR_HAP_CALLING/$SPECIMEN_NAME.$find_depth_and_alignments.COVERAGE_CUTOFF
+                                                          echo "scale=0; ($average_coverage*0.10)/1" | bc > \
+                                                          $tmp_directory/$SPECIMEN_NAME.COVERAGE_CUTOFF_PER_LOCUS_FOR_HAP_CALLING/$SPECIMEN_NAME.$find_depth_and_alignments.COVERAGE_CUTOFF
 
 
 
-                                                          ### The line below is for the present workflow. To write a new haplotype to the reference database, I want it to have at least 100 times coverage AND I want the new haplotype to be supported by 
+                                                          ### The line below will write haplotypes to a reference database of valid haplotypes. To write a new haplotype to the 
+                                                          ### reference database, I want it to have at least 100 times coverage AND I want the new haplotype to be supported by 
                                                           ### at least 25% of the reads for that locus (whichever value is higher will be the final cutoff used).
+
                                                           coverage_cutoff=`echo "scale=0; ($average_coverage*0.25)/1" | bc`
 
 
                          
-                                                          #####CD-HIT ERROR IF SOME SEQUENCES HAVE THE SAME NAME - SO I RENAME THE FASTQ FILE HEADERS TO OVERCOME THIS.
+                                                          ## CD-HIT CLUSTERING - NOTE THERE IS AN ERROR IF SOME SEQUENCES HAVE THE SAME NAME SO I RENAME THE FASTQ FILE HEADERS TO OVERCOME THIS.
                                                           $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est \
                                                           -i $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.fastq \
                                                           -o $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq \
                                                           -p 1 -c 1 -g 1 -d 0 -T $number_of_threads -s 1 -M $RAM_NEEDED
 
 
-                                                          ####THIS IS AN EMBOSS TOOL THAT WILL CONVERT FASTQ TO FASTA - you need to do this in order to turn the clusters into fasta files
+                                                          ## CONVERT FASTQ TO FASTA
                                                           seqret -sequence $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq \
                                                           -outseq $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fasta
 
 
-                                                          ###### THIS NEXT STEP WILL FILTER CLUSTES BY SIZE - REMOVING CLUSTERS THAT DO NOT HAVE MORE THAN 10 SEQUENCES IN THEM --- STEP 6 OUTPUT
+                                                          ## FILTER CLUSTERS BY SIZE
                                                           perl $working_directory/make_multi_seq.pl $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fasta \
                                                           $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPECIMEN_NAME.$find_depth_and_alignments.clean_merged_CLUSTERS.fq.clstr multi-seq $coverage_cutoff  ###dynamic cutoff.
 
@@ -172,7 +179,7 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
                                                                                                                                       do
 
 
-                                                                                                                    # make a database of known non-junction markers to see if there is a match
+                                                                                                                    ## make a database of known non-junction markers to see if there is a match
                                                                                                                     cat $complete_reference_database > $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
 
                                                                                                                     file_check_3=`echo "$working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta"`
@@ -180,7 +187,7 @@ for SPECIMEN_NAME in `cat SPECIMENS_TO_SEARCH_OTHER`
                                                                                                                     if [ `cat $file_check_3 |wc -l` -gt 0 ]; 
                                                                                                                     then 
                                                                                                                     cat $working_directory/REF_SEQS/BLASTING/NEW_HAPS/*.fasta >> $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta
-                                                                                                                    gsed -i '/Junction/,+1 d' $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta # HASHED OUT BECAUSE ONLY RELEVANT TO CYCLOSPORA
+                                                                                                                    gsed -i '/Junction/,+1 d' $tmp_directory/ALL_REFERENCE_SEQUENCES_FOR_BLASTING.fasta # ONLY RELEVANT TO CYCLOSPORA
                                                                                                                     fi
 
 
@@ -264,18 +271,18 @@ which_marker=`gsed 's/_Hap_.*/_Hap_/' $tmp_directory/$SPECIMEN_NAME.MAPPING/$SPE
                                                                                                                     cat $tmp_directory/$SPECIMEN_NAME.MAPPING/FINAL_CLIPPED.$SPECIMEN_NAME.$find_depth_and_alignments.mapped_only.fastq >> \
                                                                                                                     $tmp_directory/CLIPPED_READS_FOR_HAPLOTYPE_CALLING/$SPECIMEN_NAME.FINAL_CLIPPED_FOR_HAP_CALLING.fastq
 
-                                                                                                                                       done ## completes blasting of the clusters mapping against a marker that meet the cutoff.
+                                                                                                                                       done ## completes blasting of the clusters and noting those that meet the cutoff.
 
 
 
 
-                                                                                              done ## completes clipping of reads and establishment of cutoffs for every individual marker.
+                                                                                              done ## completes clipping of reads and establishment of cutoffs for every individual marker sub-segment.
 
                                                           cd $tmp_directory
                                                           rm -rf $SPECIMEN_NAME.MAPPING
 
 
-                                       done ## completes running of the haplotype finding module for every specimen and haplotype.
+                                       done ## completes running of this haplotype finding module for every specimen and haplotype (excluding junction haps).
 
 cd $tmp_directory
 

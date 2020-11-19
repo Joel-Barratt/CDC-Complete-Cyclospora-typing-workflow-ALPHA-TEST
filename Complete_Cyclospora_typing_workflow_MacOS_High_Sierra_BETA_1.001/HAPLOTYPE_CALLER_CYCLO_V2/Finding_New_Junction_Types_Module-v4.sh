@@ -1,11 +1,8 @@
 #!/bin/bash
 #####################################################################################################################################################################
 
+#UP November 19, 2020
 
-
-
-# please install seqtk
-#cutadapt and gsed must be installed and added to your path.
 
 
 working_directory=`cat RUN_DIR`
@@ -59,15 +56,15 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                  samtools view -h -F 4 $SPECIMEN_NAME.alignment.sam | samtools view -bS > $SPECIMEN_NAME.mapped_only.sam  #### take mapped reads only
                                  samtools view $SPECIMEN_NAME.mapped_only.sam | awk '{print("@"$1"\n"$10"\n+\n"$11)}' > $SPECIMEN_NAME.mapped_only.fastq
 
-                                 # convert the fastq sequence just created to a fasta
+                                 ## convert the fastq sequence just created to a fasta
                                  $working_directory/MIRA/mira_4.0.2_darwin13.1.0_x86_64_static/bin/miraconvert $SPECIMEN_NAME.mapped_only.fastq $SPECIMEN_NAME.mapped_only.fasta
 
-                                 #make those fasta sequences a single line - this is necessary for the string searches that will follow
+                                 ## make those fasta sequences a single line - this is necessary for the string searches that will follow
                                  cat $SPECIMEN_NAME.mapped_only.fasta | awk '/^>/ {printf("\n%s\n",$0);next; } { printf("%s",$0);}  END {printf("\n");}' >> $SPECIMEN_NAME.mapped_only_single_line.fasta
                                  awk 'NF > 0' $SPECIMEN_NAME.mapped_only_single_line.fasta > $SPECIMEN_NAME.mapped_only_single_line2.fasta
 
                
-                                ###collect the reads that were mapped to the junction sequences and then split them into their own fasta files in the directory "mapped_only"
+                                ## collect the reads that were mapped to the junction sequences and then split them into their own fasta files in the directory "mapped_only"
 
                                  mkdir mapped_only
                                  cd mapped_only
@@ -87,7 +84,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                              ##TIDY UP
+
                               rm -rf ../$SPECIMEN_NAME.*.sam
                               rm -rf ../$SPECIMEN_NAME.mapped_only.*
 
@@ -96,7 +93,8 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                    ###### This step searches for the forward and reverse primer sequences in each every read that mapped to the junction sequence so that these can be used as a refernce for a mapping assembly.
+                                    ## Search for the forward and reverse primer sequences in every read that mapped to the junction sequence 
+                                    ## so that these can be used as a refernce for a mapping assembly (MIRA).
 
                                     for my_fastas in *
                                                 do
@@ -138,7 +136,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                  # WE CLUSTER THE CLUSTERS PREVIOUSLY FOUND. THIS IS BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
+                                 ## CLUSTER THE CLUSTERS PREVIOUSLY FOUND BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
                                  $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est \
                                  -i $SPECIMEN_NAME.cluster_these_seqs.fasta \
                                  -o $temp_folder/assemble_these/$SPECIMEN_NAME.junction_clusters.fasta \
@@ -179,7 +177,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                 #### CUTADAPT to trim all junction haplotypes to the primer
+                                 ## CUTADAPT to trim all junction haplotypes to the primer
 
                                  cutadapt $SPECIMEN_NAME.newly_found_junction.fastq -g ACAGC \
                                  --output $SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq
@@ -211,7 +209,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                                                    fi
                                                                done < ../$SPECIMEN_NAME.DRAFT_0_junction_sequences.fasta
 
-                                 ###### This step searches for the forward and reverse primer sequences in each new contig, to make sure that the mapping assembly has not generated some odd artefacts.
+                                 ## Searches for forward and reverse primer sequences in each new contig, to make sure that the mapping assembly has not generated odd artifacts.
 
                                  for my_fastas in *
                                           do
@@ -245,7 +243,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-####FIRST PASS - the following steps are repeated for several passes in order to completely validate any junction sequences found.
+####FIRST PASS - the following steps are repeated for several passes in to completely validate any junction sequences found.
 ##########################################################################################################################################
                                                $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta \
                                                $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1_junction_sequences.fasta_BT_INDEX
@@ -305,8 +303,10 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
                                                #### CUTADAPT TO TRIM OFF THE PRIMERS
-                                               #### Note - this primer trimming step is intentionally repeated! When Illumina sequencing the junction, a random artefact (a strange primer concatemer) is produced on either side of a true junction repeat.
-                                               #### While it seems redundant, I run cutadapt multiple times in this workflow in order to remove these contcatemers. Please do not remove these seemingly redundant steps. I did this on purpose!
+                                               #### Note - this primer trimming step is intentionally repeated! When Illumina sequencing the junction, 
+                                               #### a random artifact (a strange primer concatemer) is sometimes produced on either side of a true junction repeat.
+                                               #### While it seems redundant, I run cutadapt multiple times in this workflow in order to remove these contcatemers. 
+                                               #### Please do not remove these seemingly redundant steps. I did this on purpose!
 
                                                cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fastq -g ACAGC \
                                                --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq
@@ -351,7 +351,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                                samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted2.bam
 
 
-                                               # call variants
+                                               ## call variants
                                                bcftools mpileup -Ou -f $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.aln.sorted2.bam \
                                                | bcftools call -mv -Oz -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls2.vcf.gz
                                                bcftools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.calls2.vcf.gz
@@ -363,9 +363,9 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                               ###get your sequences on one line
+                                               ## get your sequences on one line
                                                gsed -e 's/\(^>.*$\)/#\1#/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00002.consensus.fasta \
-                                               | tr -d "\r" | tr -d "\n" | /usr/local/bin/gsed -e 's/$/#/' | tr "#" "\n" | /usr/local/bin/gsed -e '/^$/d' > \
+                                               | tr -d "\r" | tr -d "\n" | gsed -e 's/$/#/' | tr "#" "\n" | gsed -e '/^$/d' > \
                                                $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
 
 
@@ -391,11 +391,11 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                   ##### The following steps take the putative new contigs through a serious of logical routines that allow the 
-                                   ##### workflow to decide if any contig produced in the first Bowtie pass is real or an artefact.
+                                   ##### The following steps take the putative new contigs through a series of logical routines that allow the 
+                                   ##### workflow to decide if any contig produced in the first Bowtie pass is real or an artifact.
                                    ##### They essentially check for contigs that have N bases in their sequence
 
-                                   for CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
+                                   for CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001.consensus.fasta | gsed 's/>//g'`
 
                                       do
                                          echo $CHECK_CONSENSUS_DRAFT_1 > $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
@@ -405,32 +405,33 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                          grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta > \
                                          $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_BEFORE_consensus.fasta ### sequence obtained from the original cap3 assembly - before alignment.
                                          rm $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
-                                         ### The following loops logically check whether the sequence of both of the above fasta files are sane, if one is sane, or neither are sane.
 
+                                         ## The following loops logically check whether the sequence of both of the above fasta files are sane, if one is sane, or neither are sane.
 
-                                         ### does the consensus contain any N bases? If it does, then delete it from the pile of potential junction sequences.
+                                         ## does the consensus contain any N bases? If it does, then delete it from the pile of potential junction sequences.
                                          if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_CONSENSUS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
 
-                                              then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+                                              then gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
                                          fi
 
 
-                                         ### does the original contig before bowtie mapping have any N bases? If it does, then delete it from the pile of potential junction sequences.
+                                         ## does the original contig before bowtie mapping have any N bases? If it does, then delete it from the pile of potential junction sequences.
                                          if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Y_DRAFT_1_BEFORE_consensus.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
-                                              then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+                                              then gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
                                          fi
 
 
-                                         ### Check results of the above two "if" loops, and if the two conditions below are met, scrap that cap3 contig and the consensus for it completely from the list of potential junctions.
-                                         if [ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta | tail -1 | wc -l` -eq 0 ] && \
-                                            [ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
-                                              then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
+                                         ## Check results of the above two "if" loops, and if the two conditions below are met, scrap that cap3 contig and the consensus for it 
+                                         ## completely from the list of potential junctions.
+                                         if [ `gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta | tail -1 | wc -l` -eq 0 ] && \
+                                            [ `gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
+                                              then gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
                                          fi
 
-                                         if [ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ] && \
-                                            [ `/usr/local/bin/gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
-                                         then /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
-                                         /usr/local/bin/gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+                                         if [ `gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta | tail -1 | grep "n" | wc -l` -gt 0 ] && \
+                                            [ `gsed -r -n -e "/$CHECK_CONSENSUS_DRAFT_1/,+1 p" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta | tail -1 | grep "n" | wc -l` -gt 0 ];
+                                         then gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
+                                         gsed -i "/$CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
                                          fi
                                        done
 
@@ -439,10 +440,10 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                       ### Additional sanity check. Any sequences left over (before and after correction of cap3 contigs by mapping) are BLASTed to see if they
-                                       ### had a decent BLAST hit before a consensus was generated and if the same hit is obtained after the consensus was generated.
+                                       ## Additional sanity check. Any sequences left over (before and after correction of cap3 contigs by mapping) are BLASTed to see if they
+                                       ## had a decent BLAST hit before a consensus was generated and if the same hit is obtained after the consensus was generated.
 
-                                    for SCND_CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta | /usr/local/bin/gsed 's/>//g'`
+                                    for SCND_CHECK_CONSENSUS_DRAFT_1 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.00001_junction_sequences.fasta | gsed 's/>//g'`
                                          do
                                             echo $SCND_CHECK_CONSENSUS_DRAFT_1 > $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
 
@@ -457,7 +458,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                             -input_type fasta \
                                             -dbtype nucl
 
-                                            ## Please do not turn on dust or soft masking. Trust me.
+                                            ## Please do not turn on dust or soft masking. *TRUST ME*
                                             $working_directory/BLAST/ncbi-blast-2.9.0+/bin/blastn -db $temp_folder/JUNCTION_REFS.fasta \
                                             -query $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.fasta \
                                             -word_size 7 \
@@ -488,33 +489,35 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
                                             ## did they obtain the same blast hit?
                                             if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` == `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` ];
-                                            then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+                                            then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
                                             fi
 
-                                            ## did the conensus receive a blast hit but the original sequence didnt?
+                                            ## did the consensus receive a blast hit but the original sequence not?
                                             if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` -eq 0 ] && \
                                                [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` -gt 0 ];
-                                            then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+                                            then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
                                             fi
 
-                                            ## did neither obtin a blast hit? If this is true, you may have discovered a new junction haplotype.
+                                            ## did neither obtain a blast hit? If this is true, you may have discovered a new junction haplotype.
                                             if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` -eq 0 ] \
                                             && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` -eq 0 ];
-                                            then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
+                                            then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta
                                             fi
 
                                             ## did the original cap3 contig NOT obtain a blast hit, but the consensus did?
                                             if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_BEFORE_consensus.blast_result | wc -l` -eq 0 ] \
                                             && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/X_DRAFT_1_CONSENSUS.blast_result | wc -l` -gt 0 ];
-                                            then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
+                                            then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_1/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta
                                             fi
                                          done
 
 
                                             
                                             ## you now have a set of sequences that passed the first sanity check. Write these to file.
-                                            cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta
-                                            cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta
+                                            cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.ONE_LINE.DRAFT_1.00002.consensus.fasta >> \
+                                            $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta
+                                            cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FILTER_ON_HEURISTICS.fasta >> \
+                                            $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.01_junction_sequences.fasta
 
                                             
                                             ## Tidy up the remaining junk files before moving on to the next stages.
@@ -540,25 +543,25 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                            ## I convert the remaining fasta clusters (from the previous clustering step) to a fastq file with maximum qualtiy before I feed back into cutadapt.
-                                            seqtk seq -F '#' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fasta > 
+                                            ## Convert the remaining fasta clusters (from the previous clustering step) to a fastq file with maximum qualtiy before I feed back into cutadapt.
+                                            seqtk seq -F '#' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fasta > \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fastq
 
 
                                             ## CUTADAPT TO TRIM OFF THE PRIMERS - please do this again. Trust me. Cutadapt is repeated here multiple times for a very good reason. This is not a mistake.
 
-                                            /Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fastq -g ACAGC \
+                                            cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.02_junction_sequences.fastq -g ACAGC \
                                             --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq
-                                            /Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq -a AACAC \
+                                            cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_five_prime_trim.fastq -a AACAC \
                                             --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq
-                                            /Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq -g GTGTT \
+                                            cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_three_prime_trim.fastq -g GTGTT \
                                             --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq
-                                            /Users/joelbarratt/Library/Python/3.7/bin/cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq -a GCTGT \
+                                            cutadapt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.CUTADAPT_REV_five_prime_trim.fastq -a GCTGT \
                                             --output $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta  --fasta
 
 
                                             ######################################################################################################################################################
-                                            # Cluster again hoping that after the cutadapt step, we have made some fasta sequences that now look identical to each other and will be merged befor
+                                            # Cluster again hoping that after the cutadapt step, we may have made some fasta sequences that now look identical to each other and should be merged before
                                             # the next pass.
                                             $working_directory/CD-HIT/cd-hit-v4.8.1-2019-0228/cd-hit-est -i $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.1_junction_sequences.fasta \
                                             -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta -c 1 -g 1 -d 0 -T $number_of_threads -M $RAM_NEEDED
@@ -572,7 +575,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 ### this is where we generate draft 2 of the junction sequences. The previous pass had the first set of draft junction sequences.
 
 
-                                            #BOWTIE mapping to generate a consensus sequence from the contigs that survived the first pass.
+                                            ## BOWTIE mapping to generate a consensus sequence from the contigs that survived the first pass.
                                             $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta_BT_INDEX
 
@@ -581,17 +584,17 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.OUTPUT.bam
 
 
-                                            ##### EXTRACT COVERAGE INFORMATION AFTER BOWTIE MAPPING SO THAT HAPS WITH LOW COVERAGE CAN BE THROWN AWAY.
+                                            ## EXTRACT COVERAGE INFORMATION AFTER BOWTIE MAPPING SO THAT HAPS WITH LOW COVERAGE CAN BE THROWN AWAY.
                                             samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.OUTPUT.bam -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.aln.sorted.bam
                                             samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.aln.sorted.bam
                                             samtools depth -aa -d 0 $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.aln.sorted.bam > \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.coverage # exports a file containing the coverage.
 
                                    
-                                   ## Find contigs with coverage less than 10 at any base across the entire contig.         
+                                   ## Find contigs with coverage less than 10 at **ANY** base across the entire contig.         
                                    for JUNK_REMOVAL in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.coverage | cut -f 1 | uniq`
                                             do
-         if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.coverage | /usr/local/bin/gsed 's/^/>/' | /usr/local/bin/gsed "s/$JUNK_REMOVAL\t/$JUNK_REMOVAL\t/g" | grep "$JUNK_REMOVAL" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt 10 ]
+         if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.coverage | gsed 's/^/>/' | gsed "s/$JUNK_REMOVAL\t/$JUNK_REMOVAL\t/g" | grep "$JUNK_REMOVAL" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt 10 ]
                  then echo $JUNK_REMOVAL >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.contigs_with_coverage_less_than.10.txt
          fi
                                             done
@@ -599,14 +602,14 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
                                             cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_1.11_junction_sequences.fasta > \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta
-                                            /usr/local/bin/gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.contigs_with_coverage_less_than.10.txt ## print the names of contigs that have a low coverage base.
+                                            gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.contigs_with_coverage_less_than.10.txt ## print the names of contigs that have a low coverage base.
 
 
                                             ## Delete these low coverage contigs from your set of potential junctions using the previously generated list as a reference.
                                             for HAPS_TO_REMOVE in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.contigs_with_coverage_less_than.10.txt`
                                                   do
-                                                      /usr/local/bin/gsed -i "/$HAPS_TO_REMOVE/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta #removes the line containing the fasta sequence name. 
-                                                                                                                                                                              # The '+1' removes the line after as well.
+                                                     gsed -i "/$HAPS_TO_REMOVE/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta # removes line containing the fasta seq name. 
+                                                                                                                                                              # The '+1' removes the line after as well.
                                                   done
 
 
@@ -620,7 +623,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
                                             ## Yep, Bowtie again. This is also intentional - not a mistake. We slowly but surely discard contigs that seem less likely to be real with every iteration
                                             ## As contigs are steadily discarded and we map to the remaining contigs, the coverage obtained for the remaining contigs increases.
-                                            ## We can therefore steadily increase our quality
+                                            ## We can therefore steadily increase our quality as we move towards a consensus for the true junction sequence in these specimens.
                                             $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_consensus.fasta_BT_INDEX
 
@@ -628,7 +631,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                             -U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q --threads $number_of_threads --local > \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED.OUTPUT.bam
 
-                                            ##### SORT BAM BEFORE MAKING CONSENSUS
+                                            ## SORT BAM BEFORE MAKING CONSENSUS
                                             samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED.OUTPUT.bam \
                                             -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_sorted.bam
                                             samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_sorted.bam
@@ -644,16 +647,16 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                            ### Do the blasting again for a sanity check of the remaining contigs
-                                            ###get your sequences on one line
-                                            /usr/local/bin/gsed -e 's/\(^>.*$\)/#\1#/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.RELAXED.consensus.fasta \
-                                            | tr -d "\r" | tr -d "\n" | /usr/local/bin/gsed -e 's/$/#/' | tr "#" "\n" | /usr/local/bin/gsed -e '/^$/d' > \
+                                            ## Do the blasting again for a sanity check of the remaining contigs
+                                            ## get your sequences on one line
+                                            gsed -e 's/\(^>.*$\)/#\1#/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.RELAXED.consensus.fasta \
+                                            | tr -d "\r" | tr -d "\n" | gsed -e 's/$/#/' | tr "#" "\n" | gsed -e '/^$/d' > \
                                             $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
 
 
 
 
-                                            for SCND_CHECK_CONSENSUS_DRAFT_2 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta | /usr/local/bin/gsed 's/>//g'`
+                                            for SCND_CHECK_CONSENSUS_DRAFT_2 in `grep -h '>' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta | gsed 's/>//g'`
                                                   do
                                                       echo $SCND_CHECK_CONSENSUS_DRAFT_2 > $temp_folder/CONFIRMED_JUNCTIONS/reference.txt
                                                       grep -A 1 -wFf $temp_folder/CONFIRMED_JUNCTIONS/reference.txt $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta > \
@@ -697,24 +700,24 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
                                                       if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` == `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` ];
-                                                              then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+                                                              then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
                                                       fi
 
                                                       if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` -eq 0 ] && \
                                                          [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` -gt 0 ];
-                                                            then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+                                                            then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
                                                       fi
 
 
                                                       if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` -eq 0 ] && \
                                                          [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` -eq 0 ];
-                                                                then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
+                                                                then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2_RELAXED_ONE_LINE.consensus.fasta
                                                       fi
 
 
                                                       if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_BEFORE_consensus.blast_result | wc -l` -eq 0 ] && \
                                                          [ `cat $temp_folder/CONFIRMED_JUNCTIONS/Z_DRAFT_2_CONSENSUS.blast_result | wc -l` -gt 0 ];
-                                                                 then /usr/local/bin/gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta
+                                                                 then gsed -i "/$SCND_CHECK_CONSENSUS_DRAFT_2/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.consensus.fasta
                                                       fi
                                                  done
 
@@ -727,7 +730,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-################################################## THIRD PASS FOR IDENTIFYING THE NEXT JUNCTION
+################################################## THIRD PASS FOR IDENTIFYING THE NEXT JUNCTION -- nearly done.... The junction repeat is a great marker, but hard to detect and validate (its a repeat).
 
                                                  $working_directory/BOWTIE/bowtie2-2.3.5.1-macos-x86_64/bowtie2-build $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta \
                                                  $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta_BT_INDEX
@@ -736,7 +739,7 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
                                                  -U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q -D 20 -R 3 -N 0 -L 32 -i S,2,5 --threads $number_of_threads --local > \
                                                  $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.OUTPUT.bam
 
-                                                 ##### EXTRACT COVERAGE INFORMATION AFTER BOWTIE MAPPING SO THAT HAPS WITH LOW COVERAGE CAN BE THROWN AWAY.
+                                                 ## EXTRACT COVERAGE INFORMATION AFTER BOWTIE MAPPING SO THAT HAPS WITH LOW COVERAGE CAN BE THROWN AWAY.
                                                  samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.OUTPUT.bam -o \
                                                  $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.aln.sorted.bam
                                                  samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.aln.sorted.bam
@@ -749,17 +752,17 @@ gsed -i 's/.clean_merged.fastq//g' $temp_folder/SPECIMENS_TO_SEARCH_JUNCTION
 
 
 
-                                                 ### remove any contig that has a base with coverage that is not above 1%
+                                                 ## remove any contig that has a base with coverage that is not above 1%
                                                  JUNCTION_rough_coverage_cutoff=`echo "scale=0; ($READS_MAPPING_TO_YOUR_JUNCTION*0.010)/1" | bc`
 
                                                  for JUNK_REMOVAL in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.coverage | cut -f 1 | uniq`
                                                      do
-if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.coverage | /usr/local/bin/gsed 's/^/>/' | /usr/local/bin/gsed "s/$JUNK_REMOVAL\t/$JUNK_REMOVAL\t/g" | grep "$JUNK_REMOVAL" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt $JUNCTION_rough_coverage_cutoff ]
+if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.coverage | gsed 's/^/>/' | gsed "s/$JUNK_REMOVAL\t/$JUNK_REMOVAL\t/g" | grep "$JUNK_REMOVAL" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt $JUNCTION_rough_coverage_cutoff ]
       then echo $JUNK_REMOVAL >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff.txt
 fi
                                                      done
 
-                                                 /usr/local/bin/gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff.txt
+                                                 gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff.txt
                                                  cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2.200.consensus.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.consensus.fasta
 
 
@@ -769,7 +772,7 @@ fi
                                                  ## REMOVES HAPLOTYPES FROM YOUR POTENTIAL LIST OF NEW ONES THAT POSSESS LOW COVERAGE
                                                  for HAPS_TO_REMOVE in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.contigs_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff.txt`
                                                       do
-                                                 /usr/local/bin/gsed -i "/$HAPS_TO_REMOVE/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.consensus.fasta
+                                                 gsed -i "/$HAPS_TO_REMOVE/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.consensus.fasta
                                                       done
 
                                                  rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_2*
@@ -778,7 +781,7 @@ fi
 
 
 
-                                                 ##  Cluster again. This is because the increased coverage obtained by discarding low-coverage contigs previously might result in some
+                                                 ## Cluster again. This is because the increased coverage obtained by discarding low-coverage contigs previously might result in some
                                                  ## previously identified contigs becoming identical to each other.
                                                  #########################################################################################################################################
                                                  # WE CLUSTER THE CLUSTERS PREVIOUSLY FOUND. THIS IS BECAUSE WE EXTRACTED REDUNDANT SEQUENCES IN THE PREVIOUS STEP 
@@ -799,14 +802,14 @@ fi
                                                  -U $temp_folder/PROCESSED_READS/$SPECIMEN_NAME.clean_merged.fastq -q -D 20 -R 3 -N 0 -L 32 -i S,2,5 --threads $number_of_threads --local > \
                                                  $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.OUTPUT.bam
 
-                                                 ##### EXTRACT COVERAGE INFORMATION AFTER BOWTIE MAPPING SO THAT HAPS WITH LOW COVERAGE CAN BE THROWN AWAY.
+                                                 ## EXTRACT COVERAGE INFORMATION AFTER BOWTIE MAPPING SO THAT HAPS WITH LOW COVERAGE CAN BE THROWN AWAY.
                                                  samtools sort -T -n $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.OUTPUT.bam -o $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.aln.sorted.bam
                                                  samtools index $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.aln.sorted.bam
 
                                                  samtools depth -aa -d 0 $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.aln.sorted.bam > \
                                                  $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage # exports a file containing the coverage.
 
-                                                 #### slight increase in coverage cutoff to filter out any contigs that may still have low coverage
+                                                 ## slight increase in coverage cutoff to filter out any contigs that may still have low coverage
                                                  JUNCTION_rough_coverage_cutoff_2=`echo "scale=0; ($READS_MAPPING_TO_YOUR_JUNCTION*0.015)/1" | bc` ####### DO NOT CHANGE THIS CUTOFF -- TRUST ME.
 
 
@@ -815,24 +818,24 @@ fi
                                                  ### find out which haplotypes contain bases with coverage less than your default coverage cutoff and the coverage cutoff identified above.
                                                  for NEW_HAPS in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | cut -f 1 | uniq` 
                                                        do
-          if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | /usr/local/bin/gsed 's/^/>/' | /usr/local/bin/gsed "s/$NEW_HAPS\t/$NEW_HAPS._\t/g" | grep "$NEW_HAPS._" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt $REQUIRED_DEPTH_NEW_HAP ] \
-          && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | /usr/local/bin/gsed 's/^/>/' | /usr/local/bin/gsed "s/$NEW_HAPS\t/$NEW_HAPS._\t/g" | grep "$NEW_HAPS._" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt $JUNCTION_rough_coverage_cutoff_2 ];
+          if [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | gsed 's/^/>/' | gsed "s/$NEW_HAPS\t/$NEW_HAPS._\t/g" | grep "$NEW_HAPS._" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt $REQUIRED_DEPTH_NEW_HAP ] \
+          && [ `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | gsed 's/^/>/' | gsed "s/$NEW_HAPS\t/$NEW_HAPS._\t/g" | grep "$NEW_HAPS._" | sort -u -nrk 3n | head -1 | awk '{print $3}'` -lt $JUNCTION_rough_coverage_cutoff_2 ];
                then echo $NEW_HAPS >> $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.clusters_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff_2.and.$REQUIRED_DEPTH_NEW_HAP.txt
           fi
                                                        done
 
 
                                                  ## generates list of sequence names that failed to meet the cutoffs identified above.
-                                                 /usr/local/bin/gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.clusters_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff_2.and.$REQUIRED_DEPTH_NEW_HAP.txt
+                                                 gsed -i 's/^/>/' $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.clusters_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff_2.and.$REQUIRED_DEPTH_NEW_HAP.txt
 
 
 
 
 
-                                                 ## REMOVES HAPLOTYPES FROM YOUR POTENTIAL LIST OF NEW ONES THAT POSSESS LOW COVERAGE
+                                                 ## REMOVES HAPLOTYPES FROM YOUR POTENTIAL LIST THAT POSSESS LOW COVERAGE
                                                  for HAPS_TO_REMOVE in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.clusters_with_coverage_less_than.$JUNCTION_rough_coverage_cutoff_2.and.$REQUIRED_DEPTH_NEW_HAP.txt`
                                                       do
-                                                 /usr/local/bin/gsed -i "/$HAPS_TO_REMOVE/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.CLUSTERS_consensus.fasta
+                                                 gsed -i "/$HAPS_TO_REMOVE/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.CLUSTERS_consensus.fasta
                                                       done
 
                                                  cp $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_3.CLUSTERS_consensus.fasta $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.validated_junction_sequences.fasta 
@@ -850,7 +853,7 @@ fi
                                                  for JUNCTION_TESTER in `cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | cut -f 1 | uniq` 
                                                        do
 
-                                                 coverage_at_each_base=`cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | /usr/local/bin/gsed -n "/$JUNCTION_TESTER/p" | cut -f 3`
+                                                 coverage_at_each_base=`cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.coverage | gsed -n "/$JUNCTION_TESTER/p" | cut -f 3`
                                                  number_of_bases=`echo $coverage_at_each_base | wc -w`
                                                  sum_of_bases=`echo $coverage_at_each_base | xargs | sed -e 's/\ /+/g' | bc`
                                                  average_coverage=`echo "($sum_of_bases/$number_of_bases)" | bc`
@@ -863,14 +866,14 @@ fi
                                                  two_SDs=`echo "(2*$standardDeviation)" | bc`
 
                                                  ### now if the average coverage is less than 2 standard deviations from the average coverage, then delete the contig.
-                                                 ### It means that there is a sharp drop in coverage somehwere, indicative of some erroneous bases.
+                                                 ### It means that there is a sharp drop in coverage somewhere, indicative of some erroneous bases - the Contig is probably not a true sequence
 
                                                  rounded_2SDs=`echo ${two_SDs%%.*}`
 
                                                  if [ $rounded_2SDs -gt $average_coverage ];
 
-                                                 ##delete the contig in question
-                                                 then /usr/local/bin/gsed -i "/$JUNCTION_TESTER/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.validated_junction_sequences.fasta
+                                                 ### delete the contig in question
+                                                 then gsed -i "/$JUNCTION_TESTER/,+1 d" $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.validated_junction_sequences.fasta
 
                                                  fi
 
@@ -878,7 +881,7 @@ fi
 
 
                                                  
-                                                 ####Tidy up junk files left over from previous passes.
+                                                 ## Tidy up junk files left over from previous passes.
 
                                                  rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.OUTPUT.bam
                                                  rm $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.aln.sorted.ba*
@@ -891,13 +894,15 @@ fi
 
 
 
-                                                 ##### you are now done confirming the sequence of the mt junctions that you have found. All remaining junction sequences are considered valid.
-                                                 ##### Write them to a final file.
-                                                 cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.validated_junction_sequences.fasta > $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FINAL.validated_junction_sequences.fasta
+                                                 ## you are now done confirming the sequence of the mt junctions that you have found. All remaining junction sequences are considered valid.
+                                                 ## Write them to a final file.
+                                                 cat $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.DRAFT_4.validated_junction_sequences.fasta > \
+                                                 $temp_folder/CONFIRMED_JUNCTIONS/$SPECIMEN_NAME.FINAL.validated_junction_sequences.fasta
 
 
 
-                                                 #This will split the newly discovered junction haplotypes into separate fasta files.
+                                                 # This will split the newly discovered junction haplotypes into separate fasta files if there are multiple junctions found.
+
                                                  mkdir new_potential_junctions
                                                  cd new_potential_junctions
 
@@ -921,19 +926,17 @@ fi
 
 
                                                  #### Check if the remaining valid junction types are new haplotypes, and if they are, write them to our new haplotypes folder
-                                                 #### This part of the code will make sure that their name is correct (name of our junction types is based on their length).
+                                                 #### This part of the code will make sure that their names are correct (name of our junction types is based on their length).
                                                  for FOOBAR in `ls -1`
                                                     do 
 
-
-                                                    #FOOBAR=`ls -1`
 
                                                     junction_count=`grep 'Junction_Hap' $temp_folder/JUNCTION_REFS.fasta | wc -l`
                                                     new_number=`echo "$junction_count + 1" | bc`
                                                     cat $FOOBAR | awk '/^>/{print ">Junction_Hap_'$new_number'"; next}{print}' > \
                                                     $SPECIMEN_NAME.junction_recount_$FOOBAR
 
-                                                    # NOW IF THAT SEQUENCE IS BLASTED AND IT IS NOT 100 PERCENT IDENTICAL WITH AND NOT 100% 
+                                                    # IF THAT SEQUENCE IS BLASTED AND IT IS NOT 100 PERCENT IDENTICAL TO AND NOT OBTAINING 100% 
                                                     # COVERAGE WITH ANYTHING IN THE DATABASE, THEN WE WRITE IT TO OUR LIST OF NEW HAPS.
                                                     $working_directory/BLAST/ncbi-blast-2.9.0+/bin/makeblastdb \
                                                     -in $temp_folder/JUNCTION_REFS.fasta \
@@ -961,10 +964,13 @@ fi
                                                        then echo "you have discovered a new junction type"
 
                                                        repeat_length=`cat $SPECIMEN_NAME.junction_recount_$FOOBAR | sed "1d" | tr -cd '[:alpha:]' | wc -m`
-                                                       rep_length_2=`echo "$repeat_length + 21 + 22" | bc` ## Number of bases in the new haplotype plus the length of each primer sequence. These are the primers in Fernandas paper.
-                                                       /usr/local/bin/gsed -i "1s/.*/>Mt_Cmt$rep_length_2.X_Junction_Hap_$new_number/" $SPECIMEN_NAME.junction_recount_$FOOBAR
+                                                       rep_length_2=`echo "$repeat_length + 21 + 22" | bc` ## Number of bases in the new haplotype plus the length of each primer sequence. 
+                                                                                                           ## These are the primers in the first Mt Junction paper by Nascimento et al.
+
+                                                       gsed -i "1s/.*/>Mt_Cmt$rep_length_2.X_Junction_Hap_$new_number/" $SPECIMEN_NAME.junction_recount_$FOOBAR
                                                        cat $SPECIMEN_NAME.junction_recount_$FOOBAR >> $temp_folder/JUNCTION_REFS.fasta
-                                                       cat $SPECIMEN_NAME.junction_recount_$FOOBAR >> $working_directory/REF_SEQS/BLASTING/NEW_HAPS/$SPECIMEN_NAME.Mt_Cmt$rep_length_2.X_Junction_Hap_$new_number.fasta
+                                                       cat $SPECIMEN_NAME.junction_recount_$FOOBAR >> \
+                                                       $working_directory/REF_SEQS/BLASTING/NEW_HAPS/$SPECIMEN_NAME.Mt_Cmt$rep_length_2.X_Junction_Hap_$new_number.fasta
 
                                                     elif [ $match_present -gt 0 ];
                                                     then echo "no new junction sequences were found"
@@ -976,7 +982,8 @@ fi
 
                                                     ## tidy up of junk sequences
                                                     rm -rf new_potential_junctions
-                                                    rm -rf *fasta.amb *fasta.ann *fasta.bwt *fasta.nhr *fasta.nin *fasta.nsq *fasta.pac *fasta.sa *junction_recount_* *review.txt *RESULT* *novel* *mapped_only* *map_to_this*
+                                                    rm -rf *fasta.amb *fasta.ann *fasta.bwt *fasta.nhr *fasta.nin *fasta.nsq 
+                                                    rm -rf *fasta.pac *fasta.sa *junction_recount_* *review.txt *RESULT* *novel* *mapped_only* *map_to_this*
 
 
             done   ## this last massive mega loop run for each speicmen is done.
