@@ -7,7 +7,10 @@ library(filesstrings)
 library(reshape)
 library(dbscan)
 library(spaa)
+require(parallel)
+require(stringr)
 
+#UP November 19, 2020
 
 date_today <- Sys.Date()
 
@@ -54,7 +57,7 @@ colnames(cluster) <- c("Seq_ID", "Cluster")
 
 setwd("..")
 
-write.table(cluster, paste("../clusters/",date_today,"_RESULTING_CLUSTERS_",f,".txt", sep=""), col.names = TRUE, quote = FALSE, sep = "\t", row.names = FALSE, na="")
+write.table(cluster, paste("../clusters_detected/",date_today,"_RESULTING_CLUSTERS_",f,".txt", sep=""), col.names = TRUE, quote = FALSE, sep = "\t", row.names = FALSE, na="")
 
 
 

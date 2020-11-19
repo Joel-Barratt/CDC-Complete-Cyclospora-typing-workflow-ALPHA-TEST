@@ -1,6 +1,7 @@
-
+#UP November 19, 2020
 
 stringency_level = as.numeric(readLines("STRINGENCY"))
+number_of_threads <- as.numeric(readLines("THREADS"))
 
 
 
@@ -9,14 +10,14 @@ gold_standard_clusters_A <- cluster_standards
 
 colnames(gold_standard_clusters_A) <- c("Seq_ID", "Standard_number_A")
 gold_standard_clusters_B <- gold_standard_clusters_A
-head(gold_standard_clusters_A, 5)
+#head(gold_standard_clusters_A, 5)
 colnames(gold_standard_clusters_B) <- c("row", "Standard_number_B")
-head(gold_standard_clusters_B, 5)
+#head(gold_standard_clusters_B, 5)
 list <- dist2list(as.dist(matrix))
 attach(list)
 sorted_list <- list[order(value),] #### sorts by the distance in the list, smallest to largest.
 sorted_list <- as.data.frame(sorted_list)
-sorted_list_filtered <- sorted_list %>% filter(value < 0.5) ###THIS WILL FILTER VALUES BELOW 0.3 BASED ON THE COLUMN CALLED "VALUE".
+#sorted_list_filtered <- sorted_list %>% filter(value < 0.7) ###THIS WILL FILTER VALUES BELOW 0.7 BASED ON THE COLUMN CALLED "VALUE".
 
 
 colnames(sorted_list) = NULL
@@ -65,12 +66,18 @@ golden_cluster_distance <- mean(within_cluster_standard_distance$distance) + 3*(
 
 date_today <- Sys.Date()
 
-for (f in min_cluster_number:max_cluster_number){
 
+
+
+## can we make this run in parallel
 
 Ensemble <- as.matrix(matrix)
 Ensemble_x <- as.hclust(agnes(x=Ensemble, diss = TRUE, stand = TRUE, metric = "manhattan", method = "ward"))
-name_clus <- paste(date_today,"_there_are_",f,"_genetic_clusters.txt", sep="")
+
+
+check_all_cluster_numbers = mclapply(min_cluster_number:max_cluster_number, function (f) {
+
+#name_clus <- paste(date_today,"_there_are_",f,"_genetic_clusters.txt", sep="")
 cluster <- as.data.frame(melt(factor(cutree(Ensemble_x, k=f))))
 colnames(cluster) <- NULL
 cluster <- cbind(rownames(cluster), cluster)
@@ -84,38 +91,46 @@ colnames(cluster) <- c("row", "clus_B")
 cluster_second_col <-merge(cluster_first_col, cluster, by=c("row"), all.x=TRUE)
 cluster_calc <- subset(cluster_second_col, clus_A == clus_B)
 
-head(cluster_calc, 5)
-head(cluster_second_col, 10)
-
 distances_below_gold_cluster_distance <- cluster_calc %>% filter(distance < golden_cluster_distance)
 
-current_cluster_distnace <- ((length(distances_below_gold_cluster_distance$distance))/length(cluster_calc$distance))*100
-current_cluster_distnace
-#golden_cluster_distance
+percent_within_cluster_distances_meeting_cutoff <- ((length(distances_below_gold_cluster_distance$distance))/length(cluster_calc$distance))*100 #this final result will be assigned as the output of the function.
 
-					if (stringency_level > current_cluster_distnace) {
+}, mc.cores= number_of_threads)
 
-								print(paste("Searching for the most appropriate cluster number -",f,"clusters is too small."))
+
+names(check_all_cluster_numbers) <- c(paste0("clus_",min_cluster_number:max_cluster_number))
+
+
+for (f in names(check_all_cluster_numbers)){
+
+
+					if (stringency_level > check_all_cluster_numbers[[f]]) {
+						
+                                fix <- as.numeric(str_remove(f, "clus_"))
+								print(paste("Searching for the most appropriate cluster number -",fix,"clusters is too small."))
 	
 												} else {
 													
-								colnames(cluster) <- c("Seq_ID", "Cluster")
-								
-							write.table(cluster, name_clus, sep="\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
+								fix <- as.numeric(str_remove(f, "clus_"))
+								name_clus <- paste(date_today,"_there_are_",fix,"_genetic_clusters.txt", sep="")
+								cluster2 <- as.data.frame(melt(factor(cutree(Ensemble_x, k=fix))))
+								colnames(cluster2) <- NULL
+								cluster2 <- cbind(rownames(cluster2), cluster2)
+								colnames(cluster2) <- c("Seq_ID", "Assigned_cluster")
+
+
+							write.table(cluster2, name_clus, sep="\t", quote = FALSE, col.names = TRUE, row.names = FALSE)
 							
-						print(paste("The most likely number of clusters is:", f))
+						print(paste("The most likely number of clusters is:", fix))
 						
-										if (current_cluster_distnace >= stringency_level) {
+										if (check_all_cluster_numbers[[f]] >= stringency_level) {
 											
 											break
 										}
-						
-						
-					 }
+					    }
+	}
 
 
-}
-
-correct_number_of_clusters <- f
+correct_number_of_clusters <- fix
 
 
