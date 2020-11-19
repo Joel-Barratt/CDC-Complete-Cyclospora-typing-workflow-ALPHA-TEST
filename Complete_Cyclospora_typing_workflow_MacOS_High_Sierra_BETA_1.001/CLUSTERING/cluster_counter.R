@@ -1,7 +1,7 @@
 #UP November 19, 2020
 
 stringency_level = as.numeric(readLines("STRINGENCY"))
-number_of_threads <- as.numeric(readLines("THREADS"))
+number_of_threads = as.numeric(readLines("THREADS"))
 
 
 
