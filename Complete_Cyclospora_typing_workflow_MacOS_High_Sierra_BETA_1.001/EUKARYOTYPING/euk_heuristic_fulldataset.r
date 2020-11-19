@@ -1,3 +1,5 @@
+#UP November 19, 2020
+
 number_of_threads <- as.numeric(readLines("THREADS"))
 
 alleles = list()

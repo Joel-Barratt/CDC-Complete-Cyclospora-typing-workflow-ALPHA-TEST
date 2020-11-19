@@ -3,7 +3,7 @@ require(gtools)
 require(parallel)
 library(tidyverse)
 
-
+#UP November 19, 2020
 
 source("import_data_V2.r")
 
@@ -16,7 +16,7 @@ source("import_data_V2.r")
 ids = data$ids
 nids = length(ids)
 
-source("euk_bayesian_fulldataset_V2.r")
+source("euk_bayesian_fulldataset_V3.r")
 
 source("euk_heuristic_fulldataset.r")
 
