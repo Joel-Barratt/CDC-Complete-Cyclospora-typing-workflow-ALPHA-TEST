@@ -1,6 +1,8 @@
 Please read this.
 
 
+
+
 #### FIRST THING TO DO BEFORE RUNNING THIS WORKFLOW
 
 First you will need to go into this directory:
@@ -11,4 +13,16 @@ In this folder you will see a .zip file called "REFERENCE_POPULATION.zip"
 
 Unzip it. If you want to use these files as your reference population, thats fine. Alternatively, remove them and replace them with a reference of your choosing.
 
+
+
+#### SECOND THING TO DO BEFORE RUNNING THIS WORKFLOW
+
+
+You will need to go into this directory:
+
+/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001/HAPLOTYPE_CALLER_CYCLO_V2
+
+In this folder you will see a .zip file called "SPECIMEN_GENOTYPES.zip"
+
+Unzip it. This is where the genotype of every specimen will be written. This folder will contain the genotype of numerous specimens typed in 2019. You can remove these or you can practice running various modules of the workflow on these files.
 
