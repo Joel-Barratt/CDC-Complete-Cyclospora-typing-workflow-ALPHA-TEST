@@ -33,3 +33,5 @@ Unzip it. This is where the genotype of every specimen will be written. This fol
 1. Open the "haplotype_sheets" folder, read the placeholder file, and then delete it.
 
 2. Open the "ensemble_matrices" folder, read the placeholder file, and then delete it.
+
+3. Open the "clusters_detected" folder, read the placeholder file, and then delete it.
