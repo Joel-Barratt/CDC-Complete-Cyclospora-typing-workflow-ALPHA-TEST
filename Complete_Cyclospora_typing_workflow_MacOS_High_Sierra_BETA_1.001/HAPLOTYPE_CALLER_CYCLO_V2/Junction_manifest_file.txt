@@ -1,7 +1,9 @@
 # First part: defining some basic things
 # In this example, we just give a name to the assembly
-#  and tell MIRA it should assemble a genome de-novo in accurate mode
+# and tell MIRA it should assemble a genome de-novo in accurate mode
 # As special parameter, we want to use 4 threads in parallel (where possible)
+
+#UP November 19, 2020
 
 
 project = novel_junction_finder
