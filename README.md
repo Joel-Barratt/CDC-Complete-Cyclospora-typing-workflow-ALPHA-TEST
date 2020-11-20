@@ -57,7 +57,7 @@ R -h   # this should return a help print out with options for R
 
 #### Other prerequisites
 
-This section will be updated in the future. Please stand by for updates.
+There are several other essential prerequisites and dependencies that must be installed in order to run this workflow correctly. This section will be updated in the future. Please stand by for updates.
 
 
 ### Running this code
