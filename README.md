@@ -82,7 +82,7 @@ bash MODULE_1_hap_caller.sh -h
 
 ## Additional Information on Project Participation
 
-For detailed information on how to run these workflows and how to participate in this project please contact the authors of this [manuscript](https://www.cambridge.org/core/journals/parasitology/article/genotyping-genetically-heterogeneous-cyclospora-cayetanensis-infections-to-complement-epidemiological-case-linkage/0C51FBFFB172DF50357C1D171E9B8657) and this [manuscript](https://www.cambridge.org/core/journals/epidemiology-and-infection/article/evaluation-of-an-ensemblebased-distance-statistic-for-clustering-mlst-datasets-using-epidemiologically-defined-clusters-of-cyclosporiasis/F13FB2483E3DE1CF5C33706B4A1A7182#fndtn-information) directly to ensure your work remains compatible with the CDCs _Cyclospora cayetanensis_ genotyping procedures.
+For detailed information on how to run these workflows and how to participate in this project please contact the authors of this [manuscript](https://www.cambridge.org/core/journals/parasitology/article/genotyping-genetically-heterogeneous-cyclospora-cayetanensis-infections-to-complement-epidemiological-case-linkage/0C51FBFFB172DF50357C1D171E9B8657) and this [manuscript](https://www.cambridge.org/core/journals/epidemiology-and-infection/article/evaluation-of-an-ensemblebased-distance-statistic-for-clustering-mlst-datasets-using-epidemiologically-defined-clusters-of-cyclosporiasis/F13FB2483E3DE1CF5C33706B4A1A7182#fndtn-information) directly to ensure your work remains compatible with the CDCs _Cyclospora cayetanensis_ genotyping procedures. Contacting these persons prior to attempting to participate in this project is *_essential_* to ensure compatibility with the CDC genotyping system.
 
 
 ## Deployment
