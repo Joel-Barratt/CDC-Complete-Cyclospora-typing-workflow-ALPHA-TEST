@@ -1,4 +1,4 @@
-# The CDC Cyclospora cayetanensis complete genotyping workflow
+# The CDC _Cyclospora cayetanensis_ complete genotyping workflow
 
 This repository contains the workflow developed by Joel Barratt at the Centers for Disease Control and Prevention (CDC) for genotyping Cyclospora cayetanensis. This workflow is comprised of three modules that perform three major tasks required by CDC to identify genetically related clusters of Cyclospora cayetaneisis infections. 
 
