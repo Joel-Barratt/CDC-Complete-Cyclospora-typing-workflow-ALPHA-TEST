@@ -67,7 +67,7 @@ There are several other essential prerequisites and dependencies that must be in
 ```bash
 bash MODULE_1_hap_caller.sh \
 -D TEST_DATA \
--C  /path/to/where/you/unzipped/this/software \
+-C /path/to/where/you/unzipped/this/software \
 -L 10 \
 -R 500 \
 -T 10 \
