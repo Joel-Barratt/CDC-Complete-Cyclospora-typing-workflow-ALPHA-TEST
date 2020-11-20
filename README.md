@@ -78,7 +78,7 @@ bash MODULE_1_hap_caller.sh \
 ```bash
 bash MODULE_1_hap_caller.sh -h
 ```
->This should provide a brief help listing all possible arguments.
+>This should print a brief help listing all possible arguments.
 
 ## Additional Information on Project Participation
 
