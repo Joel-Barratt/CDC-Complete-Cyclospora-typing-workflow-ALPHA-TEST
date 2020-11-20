@@ -73,7 +73,7 @@ bash MODULE_1_hap_caller.sh \
 -T 10 \
 -H Y
 ```
-> This will identify the haplotypes in 2 test samples. A produce a genotype file should be produced for two specimens _C_TEST1_20_ and _C_TEST2_20_ in the ./HAPLOTYPE_CALLER_CYCLO_V2/SPECIMEN_GENOTYPES/ directory. A new haplotype data sheet will also be generated in the ./haplotype_sheets directory. To understand the arguments supplied, while in the  Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001 directory with all the files from the cloned github run:
+> This will identify the haplotypes in 2 test samples. A produce a genotype file should be produced for two specimens _C_TEST1_20_ and _C_TEST2_20_ in the ./HAPLOTYPE_CALLER_CYCLO_V2/SPECIMEN_GENOTYPES/ directory. A new haplotype data sheet will also be generated in the ./haplotype_sheets directory. To understand the arguments supplied, run:
 
 ```bash
 bash MODULE_1_hap_caller.sh -h
