@@ -116,7 +116,7 @@ Organisations wishing to participate in the _Cyclospora cayetanensis_ genotyping
 
  <!-- need to update @Joel -->
 
-This section will be updated in the future.
+Agencies wishing to contribute to this project should contact: CyclosporaAMD@cdc.gov
 
 
 ## Acknowledgments
