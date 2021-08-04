@@ -5,16 +5,16 @@
 
 ###################################################################################################################################
 # do not modify the next 2 lines.                                                           #######################################
-CYCLONE=/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001/                  #######################################
-CLUSTERING=$CYCLONE/CLUSTERING                                                              #######################################
+SOFTWARE_VERSION=/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST/         #######################################
+CLUSTERING=$SOFTWARE_VERSION/CLUSTERING                                                     #######################################
 ###################################################################################################################################
 
 ###USER MUST MODIFY THE FOLLOWING LINES:
 
 
 
-# TELL ME THE DIRECTORY WHERE YOU PASTED THE CYCLONE FOLDER. LITERALLY WHERE YOU UNZIPPED CYCLONE AND INTEND TO RUN/INSTALL IT.
-cyclone_location=/Users/joelbarratt/Documents/CYCLOSPORA
+# TELL ME THE DIRECTORY WHERE YOU PASTED THE SOFTWARE FOLDER. LITERALLY WHERE YOU UNZIPPED THE SOFTWARE AND INTEND TO RUN/INSTALL IT.
+software_location=/Users/joelbarratt/Documents/CYCLOSPORA
 
 
 # Stringency. This must be a number between 1 and 100
@@ -59,12 +59,12 @@ number_of_threads=11
 #########################################################   DO NOT MODIFY BELOW THIS POINT
 
 
-gold_standard_clusters=$cyclone_location/$CYCLONE/REFERENCE_CLUSTER_LIST/$your_list_of_reference_clusters
+gold_standard_clusters=$software_location/$SOFTWARE_VERSION/REFERENCE_CLUSTER_LIST/$your_list_of_reference_clusters
 
 
-LOC=$cyclone_location$CLUSTERING
+LOC=$software_location$CLUSTERING
 
-matrix_folder=$cyclone_location/$CYCLONE/ensemble_matrices
+matrix_folder=$software_location/$SOFTWARE_VERSION/ensemble_matrices
 
 
 ###########################################################################################################################################################
@@ -98,7 +98,7 @@ cd $LOC
 
 rm -rf TMP_REP
 
-cd $cyclone_location/$CYCLONE
+cd $software_location/$SOFTWARE_VERSION
 
 echo "CLUSTERING COMPLETE!"
 

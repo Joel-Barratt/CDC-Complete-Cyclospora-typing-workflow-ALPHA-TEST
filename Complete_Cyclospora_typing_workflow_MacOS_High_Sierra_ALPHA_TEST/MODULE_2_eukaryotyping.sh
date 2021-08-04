@@ -3,7 +3,7 @@
 #UP November 19, 2020
 
 #####################################################################################################################################################################
-CYCLONE_DIRECTORY=/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001  # do not modify this line   ####################################################
+SOFTWARE_DIRECTORY=/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST  # do not modify this line   ####################################################
 #####################################################################################################################################################################   
 
 
@@ -34,7 +34,7 @@ epsilon=0.3072
 #####################################################################################################################################################################   
 
 
-cd $working_directory/$CYCLONE_DIRECTORY/EUKARYOTYPING
+cd $working_directory/$SOFTWARE_DIRECTORY/EUKARYOTYPING
 
 echo $number_of_threads > THREADS
 echo $epsilon > EPSILON
@@ -46,5 +46,5 @@ echo "EUKARYOTYPING COMPLETE!"
 rm THREADS
 rm EPSILON
 
-cd $working_directory/$CYCLONE_DIRECTORY/
+cd $working_directory/$SOFTWARE_DIRECTORY/
 

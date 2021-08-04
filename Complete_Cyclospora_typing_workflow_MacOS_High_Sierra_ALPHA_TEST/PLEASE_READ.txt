@@ -10,7 +10,7 @@ After installing this software, including all dependencies, and compiling all th
 
 First you will need to go into this directory:
 
-/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001/EUKARYOTYPING
+/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST/EUKARYOTYPING
 
 In this folder you will see a .zip file called "REFERENCE_POPULATION.zip"
 
@@ -23,7 +23,7 @@ Unzip it. If you want to use these files as your reference population, thats fin
 
 You will need to go into this directory:
 
-/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001/HAPLOTYPE_CALLER_CYCLO_V2
+/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST/HAPLOTYPE_CALLER_CYCLO_V2
 
 In this folder you will see a .zip file called "SPECIMEN_GENOTYPES.zip"
 
@@ -38,6 +38,25 @@ Unzip it. This is where the genotype of every specimen will be written. This fol
 2. Open the "ensemble_matrices" folder, read the placeholder file, and then delete it.
 
 3. Open the "clusters_detected" folder, read the placeholder file, and then delete it.
+
+
+### FOURTH THING TO DO BEFORE RUNNING THIS WORKFLOW
+
+Install each of the dependencies in the folders within this directory;
+
+/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST/HAPLOTYPE_CALLER_CYCLO_V2
+
+This will include;
+
+- BBMAP
+- BLAST
+- BOWTIE
+- CAP3
+- CD-HIT
+- MIRA
+
+In many cases, the required versions are provided within each of these directories within the HAPLOTYPE_CALLER_CYCLO_V2 directory. However, some software dependencies require a univesal installation on your system. Please refer to the detailed installation instructions provided with this workflow for details.
+
 
 
 #### NOW RUN THE HAPLOTYPE CALLING WORKFLOW ON THE TEST FILES

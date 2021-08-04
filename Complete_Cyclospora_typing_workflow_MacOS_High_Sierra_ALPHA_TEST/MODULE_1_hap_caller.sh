@@ -3,7 +3,7 @@
 #UP November 19, 2020
 
 package=`echo "MODULE_1_hap_caller.sh"`
-cyclone_version=`echo "Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001"`
+alpha_version=`echo "Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST"`
 HAPLOTYPE_CALLER=`echo "HAPLOTYPE_CALLER_CYCLO_V2"`
 
 
@@ -226,14 +226,14 @@ Tflag=10
 
 
 if [ -z "$Cflag" ]; then
-    echo "ERROR: Option -C (location of CYCLONE directory) was not specified. Exiting."
+    echo "ERROR: Option -C (location of software directory) was not specified. Exiting."
 exit
 fi
 
-if [ ! -d "$Cflag/$cyclone_version" ] 
+if [ ! -d "$Cflag/$alpha_version" ] 
 then
-    echo "ERROR: The directory $Cflag/$cyclone_version does not exist. 
-This is because you have either, (a) changed the original name of the CYCLONE directory, or (b) have provided the wrong directory location.
+    echo "ERROR: The directory $Cflag/$alpha_version does not exist. 
+This is because you have either, (a) changed the original name of the software directory, or (b) have provided the wrong directory location.
 Exiting." 
 exit
 fi
@@ -243,7 +243,7 @@ fi
 if [ -z "$Iflag" ]; then
     echo "No value specified for '-I'. A default set of Illumina adapters will be used for adapter trimming."
 
-Iflag=$Cflag/$cyclone_version/$HAPLOTYPE_CALLER/REF_SEQS/TRIMMING/Illumina_adapters.fasta
+Iflag=$Cflag/$alpha_version/$HAPLOTYPE_CALLER/REF_SEQS/TRIMMING/Illumina_adapters.fasta
 
 fi
 
@@ -342,7 +342,7 @@ REQUIRED_DEPTH_NEW_HAP=$Nflag  ## a default of 100 is provided if no argument is
 MINIMUM_DEPTH_TO_ASSIGN_HAPLPLOTYPES_TO_SPECIMENS=$Aflag  #### I set this to 20 as a default -- remember this is only the absolute minimum.
 
 
-working_directory=$Cflag/$cyclone_version/
+working_directory=$Cflag/$alpha_version/
 
 
 illumina_adapaters=$Iflag                                          
@@ -385,7 +385,7 @@ LOC=$working_directory$HAPLOTYPE_CALLER
 
 if [ ! -d "$LOC" ] 
 then
-    echo "ERROR: The directory $LOC does not exist. Please check that the correct path was supplied for your CYCLONE directory. Exiting." 
+    echo "ERROR: The directory $LOC does not exist. Please check that the correct path was supplied for your software directory. Exiting." 
 exit
 fi
 
