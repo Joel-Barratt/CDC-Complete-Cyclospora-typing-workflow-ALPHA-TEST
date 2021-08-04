@@ -146,7 +146,7 @@ program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
 
 The source code forked from other open source projects will inherit its license.
 
-**Note:** This version of the software represents a test version developed for academic and research purposes. It may be copied and shared freely. However, later versions of the custom code provided here (excluding the prerequisite tools possessing licenses inherrited from their initial open source projects) may be accessed via request from the US Centers for Disease Control and Prevention, and may be shared under a Software Transfer Agreement.
+**Note:** This version of the software represents a test version developed for academic and research purposes. It may be copied and shared freely. However, later versions of the custom code provided here (excluding prerequisite software possessing licenses inherrited from their initial open source projects) may be accessed via request from the US Centers for Disease Control and Prevention, and may be shared under a Software Transfer Agreement.
 
 
 ## Privacy
