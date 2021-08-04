@@ -109,7 +109,7 @@ For detailed information on how to run these workflows and how to participate in
 ## Deployment
 
 <!-- need to update once on SciComp and CDCgov github -->
-Organisations wishing to participate in the _Cyclospora cayetanensis_ genotyping network based at the US Centers for Disease Control and Prevention (CDC) should contact CDC for instructions on how they can participate. Please send email correspondance to: CyclosporaAMD@cdc.gov
+Organisations wishing to participate in the _Cyclospora cayetanensis_ genotyping network based at the US Centers for Disease Control and Prevention (CDC) should contact CDC for instructions on how they can participate. Please send email all correspondance to: CyclosporaAMD@cdc.gov
 
 
 ## Partnering
@@ -121,7 +121,7 @@ Agencies wishing to partner with CDC on the _Cyclospora_ genotyping project, or 
 
 ## Acknowledgments
 
-Sincere thanks to the scientists, bioinformaticians, programmers and software developers who developed the various pre-requisite tools used in this workflow.
+Sincere thanks to the scientists, bioinformaticians, and developers who contributed the various freely available pre-requisite tools used as part of this workflow.
 
 ## Public Domain
 
@@ -150,7 +150,7 @@ program. If not, see http://www.apache.org/licenses/LICENSE-2.0.html
 
 The source code forked from other open source projects will inherit its license.
 
-**Note:** This version of the software represents a test version developed for academic and research purposes. It may be copied and shared freely. However, later versions of the custom code provided here (excluding prerequisite software possessing licenses inherrited from their initial open source projects) may be accessed via request from the US Centers for Disease Control and Prevention, and may be shared under a Software Transfer Agreement.
+**Note:** This version of the software represents a test version developed for academic and research purposes. It may be copied and shared freely. However, later versions of the custom code provided here (excluding prerequisite software possessing licenses inherrited from their initial open source projects) may be accessed via request from the US Centers for Disease Control and Prevention (CyclosporaAMD@cdc.gov) under limited circumstances, and may be shared under a Software Transfer Agreement.
 
 
 ## Privacy
@@ -160,7 +160,7 @@ Surveillance Platform [Disclaimer](https://github.com/CDCgov/template/blob/maste
 and [Code of Conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md).
 For more information about CDC's privacy policy, please visit [http://www.cdc.gov/privacy.html](http://www.cdc.gov/privacy.html).
 
-## Contributing
+## Contributing to this repository
 Anyone is encouraged to contribute to the repository by [forking](https://help.github.com/articles/fork-a-repo)
 and submitting a pull request. (If you are new to GitHub, you might start with a
 [basic tutorial](https://help.github.com/articles/set-up-git).) By contributing
