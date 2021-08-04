@@ -62,7 +62,8 @@ There are several other essential prerequisites and dependencies that must be in
 
 ### Running this code
 
->While in the Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_BETA_1.001 directory with all the files from the cloned github run (example):
+#### Executing Module 1
+>While in the Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST directory with all the files from the cloned github run (example):
 
 ```bash
 bash MODULE_1_hap_caller.sh \
@@ -79,6 +80,22 @@ bash MODULE_1_hap_caller.sh \
 bash MODULE_1_hap_caller.sh -h
 ```
 >This should print a brief help listing all possible arguments.
+
+#### Executing Module 2
+>While in the Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST directory with all the files from the cloned github run (example):
+
+```bash
+bash MODULE_2_eukaryotyping.sh
+```
+>This will execute a series of R scripts that calculate genetic distances using the Barratt-Plucinski ("Eukaryotyping") ensemble using the haplotype data sheet printed by Module 1 (found in the haplotype_sheets directory) as input. Percent progress will be printed to the terminal window as a decimal for each of the two algorithms (Plucinski's Bayesian algorithm and Barratt's Heuristic algorithm) separately. Note that Module 2 may take a while to run to completion depending on the number of threads you dedicate to the computation. Module 2 will generate a new ensemble matrix which will be printed to the ensemble_matrices directory.
+
+#### Executing Module 3
+>While in the Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST directory with all the files from the cloned github run (example):
+
+```bash
+bash MODULE_3_clustering.sh
+```
+>This will execute scripts that determine an appropriate number of clusters from a heirarchical tree and print the cluster memberships to the clusters_detected directory.
 
 ## Additional Information on Project Participation
 
