@@ -1,4 +1,4 @@
-# The CDC _Cyclospora cayetanensis_ genotyping workflow - Alpha Version
+# The CDC _Cyclospora cayetanensis_ genotyping workflow - Alpha Test Version
 
 This repository contains the **Alpha test version** of the workflow developed by Joel Barratt at the Centers for Disease Control and Prevention (CDC) for genotyping _Cyclospora cayetanensis_. This workflow is comprised of three modules that perform three major tasks that facilitate identification of genetically related clusters of _Cyclospora cayetanensis_ infections. 
 
