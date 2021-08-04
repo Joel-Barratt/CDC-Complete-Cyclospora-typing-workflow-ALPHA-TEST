@@ -2,7 +2,7 @@
 
 This repository contains the **Alpha test version** of the workflow developed by Joel Barratt at the Centers for Disease Control and Prevention (CDC) for genotyping _Cyclospora cayetanensis_. This workflow is comprised of three modules that perform three major tasks that facilitate identification of genetically related clusters of _Cyclospora cayetanensis_ infections. This test version is unoptimisd and possesses some limitations, though represents a relatively stable alpha test release of CDCs _Cyclospora cayetanensis_ genotyping workflow.
 
-**This workflow forms the basis of a US-wide _Cyclospora_ genotyping system developed exclusively at CDC to facilitate detection of cyclosporiasis outbreaks.**
+**This workflow forms the basis of a US-wide _Cyclospora_ genotyping system developed at CDC to facilitate detection of cyclosporiasis outbreaks.**
 
  1. **MODULE 1** - Assign haplotypes to each specimen in accordance with the CDC typing method discussed [here](https://www.cambridge.org/core/journals/epidemiology-and-infection/article/evaluation-of-an-ensemblebased-distance-statistic-for-clustering-mlst-datasets-using-epidemiologically-defined-clusters-of-cyclosporiasis/F13FB2483E3DE1CF5C33706B4A1A7182). This module will also detect and validate novel haplotypes that have not been encountered previously and write them to a local database.
 
