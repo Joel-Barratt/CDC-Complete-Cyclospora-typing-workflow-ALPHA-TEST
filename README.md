@@ -117,8 +117,7 @@ This section will be updated in the future.
 
 ## Acknowledgments
 
-* Sincere thanks to the scientists and programmers who developed the various pre-requisite tools used in this workflow.
-
+Sincere thanks to the scientists, bioinformaticians, programmers and software developers who developed the various pre-requisite tools used in this workflow.
 
 ## Public Domain
 
