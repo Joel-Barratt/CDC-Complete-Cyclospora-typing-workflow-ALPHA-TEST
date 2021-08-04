@@ -61,7 +61,7 @@ R -h   # this should return a help print out with options for R
 
 #### Other prerequisites
 
-Please refer to the detailed "Installation and usage guide - ALPHA VERSION.pdf" document provided with this workflow.
+Please refer to the "CDC Cyclospora genotyping workflow ALPHA Installation and usage guide" document provided with this repository for detailed instructions.
 
 
 ### Running this code
