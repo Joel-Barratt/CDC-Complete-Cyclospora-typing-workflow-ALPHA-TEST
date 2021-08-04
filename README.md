@@ -103,13 +103,15 @@ bash MODULE_3_clustering.sh
 
 ## Additional information
 
-For detailed information on how to run these workflows and how to participate in this project please contact the authors of this [manuscript](https://www.cambridge.org/core/journals/parasitology/article/genotyping-genetically-heterogeneous-cyclospora-cayetanensis-infections-to-complement-epidemiological-case-linkage/0C51FBFFB172DF50357C1D171E9B8657) and this [manuscript](https://www.cambridge.org/core/journals/epidemiology-and-infection/article/evaluation-of-an-ensemblebased-distance-statistic-for-clustering-mlst-datasets-using-epidemiologically-defined-clusters-of-cyclosporiasis/F13FB2483E3DE1CF5C33706B4A1A7182#fndtn-information), at CyclosporaAMD@cdc.gov to ensure compatibility with the CDC's _Cyclospora cayetanensis_ genotyping procedures and updated versions. This is essential is an **_essential_** for participation in CDC's _Cyclospora cayetanensis_ genotyping network to ensure compatibility and version control.
+For additional information please refer to this [manuscript](https://www.cambridge.org/core/journals/parasitology/article/genotyping-genetically-heterogeneous-cyclospora-cayetanensis-infections-to-complement-epidemiological-case-linkage/0C51FBFFB172DF50357C1D171E9B8657) and this [manuscript](https://www.cambridge.org/core/journals/epidemiology-and-infection/article/evaluation-of-an-ensemblebased-distance-statistic-for-clustering-mlst-datasets-using-epidemiologically-defined-clusters-of-cyclosporiasis/F13FB2483E3DE1CF5C33706B4A1A7182#fndtn-information).
 
 
 ## Deployment
 
 <!-- need to update once on SciComp and CDCgov github -->
 Organisations wishing to participate in the _Cyclospora cayetanensis_ genotyping network based at the US Centers for Disease Control and Prevention (CDC) should contact CDC for instructions on how they can participate. Please send email all correspondance to: CyclosporaAMD@cdc.gov
+
+This will ensure compatibility with the CDC's _Cyclospora cayetanensis_ genotyping procedures. For those who wish to participate as a member of CDC's national _Cyclospora cayetanensis_ genotyping network directly, it is **_essential_** that users contact CDC at the above email address to ensure they are informed of the most recent standard operating procedures.
 
 ## Partnering
 
