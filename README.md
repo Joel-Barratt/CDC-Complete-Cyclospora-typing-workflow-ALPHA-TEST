@@ -112,11 +112,11 @@ For detailed information on how to run these workflows and how to participate in
 Organisations wishing to participate in the _Cyclospora cayetanensis_ genotyping network based at the US Centers for Disease Control and Prevention (CDC) should contact CDC for instructions on how they can participate. Please send email correspondance to: CyclosporaAMD@cdc.gov
 
 
-## Contributing
+## Partnering
 
  <!-- need to update @Joel -->
 
-Potential partners wishing to contribute to the CDC's _Cyclospora_ genotyping project should contact: CyclosporaAMD@cdc.gov
+Agencies wishing to partner with CDC on the _Cyclospora_ genotyping project, or those wishing to contribute by joinging the CDC's _Cyclospora cayetanensis_ genotyping network should contact: CyclosporaAMD@cdc.gov
 
 
 ## Acknowledgments
