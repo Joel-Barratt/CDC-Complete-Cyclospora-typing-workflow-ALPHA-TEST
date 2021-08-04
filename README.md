@@ -24,7 +24,7 @@ S0950268820001697
 
 ## Getting started
 
->These instructions will help you set up and run this code on your local machine for development and testing purposes. See deployment for notes for information on how to deploy the project on a live system.
+>These instructions will help you set up and run this code on your local machine for development and testing purposes **only**. See deployment for notes for information on how to deploy the project on a live system.
 
 This code was developed and tested using a Mac running OSX Catalina 10.15.3 and Mac OSX HighSierra 10.13.6. Further testing has verified this code on a Mac runnning OSX Big Sur 11.2. Subsequent instructions are provided _only_ for installing it on an OSX system.
 
@@ -61,7 +61,7 @@ R -h   # this should return a help print out with options for R
 
 #### Other prerequisites
 
-There are several other essential prerequisites and dependencies that must be installed in order to run this workflow correctly. This section will be updated in the future. Please stand by for updates.
+Please refer to the detailed "Installation and usage guide - ALPHA VERSION.pdf" document provided with this workflow.
 
 
 ### Running this code
