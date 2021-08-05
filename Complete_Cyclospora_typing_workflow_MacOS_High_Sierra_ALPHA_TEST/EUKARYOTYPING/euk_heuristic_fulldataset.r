@@ -1,4 +1,4 @@
-#UP November 19, 2020
+#UPDATED August 5, 2021
 
 number_of_threads <- as.numeric(readLines("THREADS"))
 
@@ -163,10 +163,8 @@ for (j in 1:(nloci)) {
 }
 
 
-#pairwisedistancematrix2 = sapply(1:nids, function (x) sapply(1:nids, function (y) pairwisedistance_heuristic(x,y)))
 colnames(pairwisedistancematrix) = ids 
 rownames(pairwisedistancematrix) = ids
-#write.csv(finalpairwisedistancematrix,"pairwisedistancematrix_heuristic.csv")
 
 Heuristic_pairwisedistancematrix = finalpairwisedistancematrix 
 
