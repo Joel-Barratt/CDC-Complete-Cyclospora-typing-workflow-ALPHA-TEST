@@ -184,3 +184,5 @@ for more information about [contributing to this repository](https://github.com/
 [public domain notices and disclaimers](https://github.com/CDCgov/template/blob/master/DISCLAIMER.md),
 and our [code of conduct](https://github.com/CDCgov/template/blob/master/code-of-conduct.md).
 
+Any views, opinions and findings expressed in this repository **are solely those of the author.**
+
