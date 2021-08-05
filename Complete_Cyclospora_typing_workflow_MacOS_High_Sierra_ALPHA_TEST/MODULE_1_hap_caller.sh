@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#UP November 19, 2020
 #UPDATED August 5, 2021
 
 package=`echo "MODULE_1_hap_caller.sh"`
