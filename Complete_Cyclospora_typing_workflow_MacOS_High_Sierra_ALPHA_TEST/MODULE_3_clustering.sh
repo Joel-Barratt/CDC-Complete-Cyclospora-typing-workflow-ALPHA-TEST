@@ -1,7 +1,7 @@
 
 #!/bin/bash
 
-#UP November 19, 2020
+#UPDATED August 5, 2021
 
 ###################################################################################################################################
 # do not modify the next 2 lines.                                                           #######################################
@@ -35,11 +35,6 @@ your_list_of_reference_clusters=2018_gold_clusters.txt
 
 # Tell me the number of threads you would like to use
 number_of_threads=11
-
-
-
-
-
 
 
 
