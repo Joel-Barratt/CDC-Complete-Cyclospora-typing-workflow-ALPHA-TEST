@@ -1,4 +1,4 @@
-#UP November 19, 2020
+#UP August 5, 2021
 
 number_of_threads <- as.numeric(readLines("THREADS"))
 EPSILON <- as.numeric(readLines("EPSILON"))
