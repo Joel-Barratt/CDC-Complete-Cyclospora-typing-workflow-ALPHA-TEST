@@ -28,7 +28,7 @@ epsilon=0.3072
 
 
 
-
+#########################################################   DO NOT MODIFY BELOW THIS POINT
 
 
 cd $working_directory/$SOFTWARE_DIRECTORY/EUKARYOTYPING
