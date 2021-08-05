@@ -1,6 +1,6 @@
 #READ
 
-After installing this software, including all dependencies, and compiling all the necessary third-party softwares, you will need to complete these last 3 steps for the workflow to function correctly.
+You will need to complete these 4 steps for the workflow to function correctly.
 
 
 
