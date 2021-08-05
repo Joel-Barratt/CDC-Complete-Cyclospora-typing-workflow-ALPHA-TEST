@@ -4,11 +4,6 @@ number_of_threads <- as.numeric(readLines("THREADS"))
 EPSILON <- as.numeric(readLines("EPSILON"))
 
 
-###
-
-# calculate allele frequencies
-
-# calculate likelihood of no relation and likelihood of relation
 
 calculate_loglikelihood = function(v1,v2,p1,p2,ploid){
 	# p1 is vector of allele frequencies in sample 1
@@ -81,7 +76,6 @@ for (j in 1:nloci) {
 	alleles[[j]] = unique(raw_alleles[!is.na(raw_alleles)])
 	frequencies[[j]] = sapply(alleles[[j]], function(x) sum(raw_alleles == x,na.rm=TRUE))
 	frequencies[[j]] = frequencies[[j]] / sum(frequencies[[j]])
-#	frequencies[[j]] = frequencies[[j]] / length(raw_alleles)
 }
 
 
@@ -122,7 +116,6 @@ pairwisedistance = function(isolate1,isolate2){
 allpossiblepairs = expand.grid(1:nids,1:nids)
 allpossiblepairs = unique(allpossiblepairs[allpossiblepairs[,1] <= allpossiblepairs[,2],])
 
-# pairwisedistancevector = unlist(lapply(1:dim(allpossiblepairs)[1], function (x) pairwisedistance(allpossiblepairs[x,1],allpossiblepairs[x,2]))) # not parallel
 
 pairwisedistancevector = unlist(mclapply(1:dim(allpossiblepairs)[1], function (x) pairwisedistance(allpossiblepairs[x,1],allpossiblepairs[x,2]),mc.cores= number_of_threads)) # parallel
 
@@ -132,15 +125,6 @@ sapply(1:dim(allpossiblepairs)[1], function (x) pairwisedistancematrix[allpossib
 
 colnames(pairwisedistancematrix) = ids 
 rownames(pairwisedistancematrix) = ids
-#write.csv(pairwisedistancematrix,"pairwisedistancematrix_Bayesian.csv")
 
 Bayesian_pairwisedistancematrix = pairwisedistancematrix 
-
-
-## note, joel hashed out the bottom three lines. test to see what happens without them.
-#library(ggplot2)
-#library(Rtsne)
-#pairwisedistancematrix
-
-#colv_clustering = rep(rgb(0,0,0), length(ids))
 
