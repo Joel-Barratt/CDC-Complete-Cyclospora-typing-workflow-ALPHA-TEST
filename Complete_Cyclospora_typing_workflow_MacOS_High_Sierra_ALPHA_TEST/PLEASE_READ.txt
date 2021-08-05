@@ -52,10 +52,10 @@ This will include;
 - BLAST
 - BOWTIE
 - CAP3
-- CD-HIT
+- CD-HIT (will need to be compiled in place)
 - MIRA
 
-In many cases, the required versions are provided within each of these directories within the HAPLOTYPE_CALLER_CYCLO_V2 directory. However, some software dependencies require a univesal installation on your system. Please refer to the detailed installation instructions provided with this workflow for details.
+In many cases, the required versions are provided within each of these directories within the HAPLOTYPE_CALLER_CYCLO_V2 directory. However, some software dependencies require a universal installation on your system. Please refer to the detailed installation instructions provided with this workflow for details.
 
 
 
