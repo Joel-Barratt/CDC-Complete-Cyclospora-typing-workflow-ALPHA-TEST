@@ -55,13 +55,13 @@ This will include;
 - CD-HIT (will need to be compiled in place)
 - MIRA
 
-In many cases, the required versions are provided within each of these directories within the HAPLOTYPE_CALLER_CYCLO_V2 directory. However, some software dependencies require a universal installation on your system. Please refer to the detailed installation instructions provided with this workflow for details.
+In many cases, the required versions are provided within each of these directories within the HAPLOTYPE_CALLER_CYCLO_V2 directory. However, some software dependencies require a universal installation on your system. Please refer to the detailed installation instructions provided with this workflow for details. If you are missing even one of the haplotypes from the lists below in the files generated for these test specimens, then the workflow has not run correctly and you will need to double check that all dependencies are met.
 
 
 
 #### NOW RUN THE HAPLOTYPE CALLING WORKFLOW ON THE TEST FILES
 
-1. The genotype of C_TEST1_20 should be as follows:
+1. The genotype of C_TEST1_20 should be as follows (look in the SPECIMEN_GENOTYPES directory):
 
 Nu_CDS1_PART_B_Hap_2	100.000	0	0	0	TGTGCTTGCATGCATCCGTAGACGCATGTCACCTCTAGCCCTTTGTTGCTTGAGGCGCTGCTTATCCG	8.10e-34	126
 Nu_CDS1_PART_A_Hap_2	100.000	0	0	0	GGATCACTCTCCAGGCGCTGCCCTCCTCGCACTGTGTCCACCCTTTCTCTACGCTTCCCCATGTCTC	2.86e-33	124
@@ -86,7 +86,7 @@ Nu_378_PART_A_Hap_4	100.000	0	0	0	CTTATGGTCATTTGCTTTGTGTATCTGCTTCCCTGTGGGTCGATTG
 Nu_378_PART_A_Hap_5	100.000	0	0	0	CTTATGGTCATTTGCTTTGTGCATCTGCTTCCCTGTTGTTCGATTGTCGTACCAGGTGTTGGAGTCCGAGGTGTATTCTGAACTGAGGAATGTAGGTGCATGTTACTGGCACGG	3.82e-59	211
 Mt_Cmt184.C_Junction_Hap_13	100.000	0	0	0	TGCGGAAACTGTATTTTTATTATTTAATTTTACTATTTTAAATAGTATTATTTATAATAGTATTATTTATAATAGTATTATTTATAATAGTATTATTTTTAATAGTACTATTTTTAATATAAAAATTTAGTACACCTAGCC	3.38e-75	261
 
-2. The genotype of C_TEST2_20 should be as follows:
+2. The genotype of C_TEST2_20 should be as follows (look in the SPECIMEN_GENOTYPES directory):
 
 Nu_CDS3_PART_B_Hap_1	100.000	0	0	0	CATCTACAAGTGCACCAGCAGAACTAACCCTGTCACGAAAGGCGGCACGAGTGCTGCGCTAGAGGCTTCTCGGTTTGTTCAGCCGCCGC	2.82e-45	165
 Nu_CDS3_PART_A_Hap_1	100.000	0	0	0	GTTGCTTTATCTTTGGCAGTTAGACAGGGAGGGATTCCTACATTTGCAGGTGATGCTGCTACCTCCATGCGCAGCTGCAACACCAGCAA	2.82e-45	165
