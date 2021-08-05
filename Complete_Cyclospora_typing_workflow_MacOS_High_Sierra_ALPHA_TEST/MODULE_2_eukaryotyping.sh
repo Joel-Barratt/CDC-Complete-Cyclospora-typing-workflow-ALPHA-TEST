@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#UP November 19, 2020
+#UPDATED August 5, 2021
 
 #####################################################################################################################################################################
 SOFTWARE_DIRECTORY=/Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST  # do not modify this line   ####################################################
@@ -29,9 +29,6 @@ epsilon=0.3072
 
 
 
-
-# DO NOT MODIFY BELOW THIS POINT
-#####################################################################################################################################################################   
 
 
 cd $working_directory/$SOFTWARE_DIRECTORY/EUKARYOTYPING
