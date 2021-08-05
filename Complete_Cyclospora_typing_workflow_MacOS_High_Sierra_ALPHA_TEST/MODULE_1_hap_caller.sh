@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #UP November 19, 2020
+#UPDATED August 5, 2021
 
 package=`echo "MODULE_1_hap_caller.sh"`
 alpha_version=`echo "Complete_Cyclospora_typing_workflow_MacOS_High_Sierra_ALPHA_TEST"`
@@ -316,30 +317,15 @@ echo ""
 
 #### IF YOU FIND A NEW HAPLOTYPE, WHAT IS THE MINIMUM DEPTH REQUIRED FOR IT TO BE CONSIDERED REAL? THIS IS SPECIFICALLY FOR *NEW* HAPLOTYPE DISCOVERY.
 
-##### PLEASE NOTE THAT THIS SOFTWARE HAS A DYNAMIC DEPTH DETERMINATION FEATURE THAT IS IMPLEMENTED WHEN DETECTING NEW HAPLOTYPES. THEREFORE, COVERAGE REQUIREMENTS WILL SLIDE UP OR DOWN 
-##### DEPENDING ON THE COVERAGE OBTAINED FOR A PARTICULAR AMPLICON
-##### If  you have 20 fold depth of your marker, would you feel comfortable calling two new haplotypes from this (one with depth 12 and another with depth 8 for example)?
-##### I don't, so I set this threshold to 100 per new haplotype as a default - as an absolute minimum to support a novel haplotype (the user can only reset the absolute minimum).
-##### Setting an absolute minimum at 100 means that if 2 *NOVEL* haplotypes are detected in a specimen, they will each need depth of 100 or greater (i.e. at least 200 reads, 100 for each)
-##### before that haplotype is written to file and stored in the haplotype database for future reference.
-##### Alternatively, if the locus has 500 fold coverage, new haplotypes are called only if their coverage is equal to, or rises above 25% of the total population of reads that map to this locus;
-##### that is 125 reads in this case. If the coverage of a locus is 1000, new haplotypes must have coverage of 250 reads at least. Note that this is based on average coverage across the locus.
-##### Also, I set the absolute minimum to 100 as a default -- if this is exceeded the sliding cutoff is used.
-
 REQUIRED_DEPTH_NEW_HAP=$Nflag  ## a default of 100 is provided if no argument is supplied for this flag.
 
+
+
 ##### REQUIRED DEPTH OF SEQUENCING TO SUPPORT THE PRESENCE OF A HAPLOTYPE WITHIN A SPECIMEN
-#####
-##### THIS IS NOT FOR HAPLOTYPE DISCOVERY -- THIS IS THE DEPTH REQUIRED TO DETERMINE IF A SPECIMEN POSSESSES A HAPLOTYPE THAT HAS ALREADY BEEN OBSERVED BEFORE. 
-##### THIS WHY THIS IS A LESS STRINGENT CUTOFF THAN THE ONE USED FOR NOVEL HAPLOTYPE DISCOVERY.
-##### PLEASE NOTE THAT THERE IS ALSO A DYNAMIC DEPTH DETERMINATION FEATURE OF THIS SOFTWARE, AND THIS WILL SLIDE DEPENDING ON THE DEPTH OBTAINED FOR A PARTICULAR AMPLICON
-##### If you have 20 fold depth for your marker, would you feel comfortable calling two haplotypes from this (one with depth 12 and another with depth 8 for example)? I don't, so I set 
-##### an absolute minimum depth threshold to 20 reads to determine if a haplotype exists in a specimen. So, if a specimen has 2 haplotypes for a given locus, 40 reads are required for this locus
-##### (20 reads for each haplotype) before the haplotypes are confirmed as being present in the specimen under investigation.
-##### Alternatively, if the locus has 500 fold coverage, new haplotypes are called only if their coverage is equal to, or rises above 10% of the total population of reads that map to this locus;
-##### that is 50 reads in this case. If the coverage of a locus is 1000, new haplotypes must have coverage of 100 reads at least.
 
 MINIMUM_DEPTH_TO_ASSIGN_HAPLPLOTYPES_TO_SPECIMENS=$Aflag  #### I set this to 20 as a default -- remember this is only the absolute minimum.
+
+
 
 
 working_directory=$Cflag/$alpha_version/
