@@ -3,14 +3,11 @@ require(gtools)
 require(parallel)
 library(tidyverse)
 
-#UP November 19, 2020
+#UPDATED August 5, 2021
 
 source("import_data_V2.r")
 
-# only clean data
-#data = cleandata
-# only  first 10
-#data = data[1:10,]
+
 
 
 ids = data$ids
